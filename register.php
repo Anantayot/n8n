@@ -1,7 +1,7 @@
 <?php
 // 1. กำหนด Webhook URL ของ n8n
 // **สำคัญ:** แทนที่ URL ด้านล่างด้วย Production Webhook URL จริงของ Workflow #1 ของคุณ
-$n8n_webhook_url = 'http://100.114.135.132:5678/webhook/smart-insight/register';
+$n8n_webhook_url = 'http://127.0.0.1:5678/webhook/smart-insight/register';
 
 $message = '';
 $message_type = '';
