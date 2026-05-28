@@ -1,0 +1,3746 @@
+{
+  "name": "easy bus",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ed7078b5-1691-478c-909e-89534c9a450e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        -288
+      ],
+      "id": "f8a7470e-5786-4ec9-9707-c9a13d8d9c77",
+      "name": "Webhook",
+      "webhookId": "ed7078b5-1691-478c-909e-89534c9a450e"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"userId\": \"{{ $json.body.events[0].source.userId }}\",\n  \"replyToken\": \"{{ $json.body.events[0].replyToken }}\",\n  \"messageText\": \"{{ $json.body.events[0].message.text }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        -288
+      ],
+      "id": "ed9cfb8d-6eb9-4e5d-b39c-c9c1b025b65b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3b025839-b26e-475a-8d72-a994a764a457",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "เช็ค",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        400,
+        384
+      ],
+      "id": "e299b00f-88ad-4201-8217-9b44d31637e9",
+      "name": "เช็ครอบ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "83317ef5-b7f9-45ee-b0d4-e62ea4e797d3",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "สวัสดี",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "95164e26-a550-494d-9af8-f5a69991a6ac",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "ดี",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "bbabcf3d-4603-4c48-a669-1d8f47ccf564",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "ติดต่อเรา",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "488e4d87-5fa6-4f7a-919b-a381430d6d96",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "ดีครับ",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "66a8e993-c594-4ad6-a8aa-f53a9a647832",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "undefined",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -48,
+        -112
+      ],
+      "id": "5a0045e0-2ab1-4fec-bc10-9ed2ad8b7b1d",
+      "name": "สวัสดี"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.message) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        592,
+        -64
+      ],
+      "id": "e35fe0e7-5550-45aa-a08f-2dd0ecf293f0",
+      "name": "ส่งตอบสวัสดีครับ",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "625fbdd9-5b8a-48cc-94fb-ee501035cddd",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": ":00",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        640
+      ],
+      "id": "ffdf2330-3604-41b7-95d7-9cf7beac4516",
+      "name": "เช็คเวลา"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst source = $items(\"Edit Fields\")[0].json;\nconst messageText = source.messageText;\nconst replyToken = source.replyToken;\n\nconst [dateText, timeText] = messageText.split(\" \");\n\nconst availableSeats = rows\n  .filter(r => r.json[\"ว่าง/ไม่ว่าง\"] === \"ว่าง\")\n  .map(r => r.json[\"ที่นั่ง\"]);\n\nconst seatRows = [\"A\", \"B\", \"C\", \"D\", \"F\", \"G\", \"H\"];\n\nlet result = [];\n\nfor (const row of seatRows) {\n  const seat1 = availableSeats.includes(row + \"1\") ? row + \"1\" : \"xx\";\n  const seat2 = availableSeats.includes(row + \"2\") ? row + \"2\" : \"xx\";\n  const seat3 = availableSeats.includes(row + \"3\") ? row + \"3\" : \"xx\";\n\n  // เพิ่มช่องว่างระหว่างคอลัมน์ให้ห่างขึ้น (ใช้ 3-4 spaces)\n  // และใส่บรรทัดว่างต่อท้ายแต่ละแถวเพื่อให้ดูโปร่ง\n  result.push(`${seat1}   |   ${seat2}   ${seat3}\\n`); \n}\n\nconst table = result.join(\"\"); // ไม่ต้อง join ด้วย \\n เพราะเพิ่มใน push แล้ว\n\nreturn [\n  {\n    json: {\n      replyToken: replyToken,\n      replyText: `📅 รอบวันที่: ${dateText}\n⏰ เวลา: ${timeText}\n🪑 ที่นั่งว่าง:\n${table}\nหมายเหตุ: xx = ที่นั่งที่\"จองแล้ว\"`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        368
+      ],
+      "id": "96ecac92-81f5-4ebd-b146-300df6fcc14b",
+      "name": "เลือกที่นั่งว่าง"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.replyText) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2576,
+        368
+      ],
+      "id": "4a1b4ea3-e7ad-4ee6-8460-344fad0814ea",
+      "name": "ส่งที่นั่งว่าง",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"replyToken\": $('Edit Fields').item.json.replyToken,\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"ไม่เข้าใจคำสั่ง\"\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1104,
+        1408
+      ],
+      "id": "ec1adaf4-c2e7-4e31-b00c-1d99f5e61625",
+      "name": "ไม่เข้าใจคำสั่ง",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.replyText) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        224
+      ],
+      "id": "4a940d03-8176-4076-aa97-4f07868db52b",
+      "name": "ส่งแบบฟรอร์ม",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $('รอบรถ').item.json.date }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1776,
+        368
+      ],
+      "id": "726e5a39-334d-435c-b298-afec6e3f779e",
+      "name": "Search files and folders1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.fileId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('เช็ครอบ1').item.json.time }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2192,
+        368
+      ],
+      "id": "ba49cd8a-c8a1-443c-b233-677f19ab6517",
+      "name": "เลือกเวลา",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        -880
+      ],
+      "id": "bd9a9e0f-9422-4743-96a9-f2ed8afe71b5",
+      "name": "ตั้งเวลา"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "16k7FuUaQ9eB5xW9umaS4CIYkwcBZ1BUPJMCw8VXHx4g",
+          "mode": "list",
+          "cachedResultName": "Template n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16k7FuUaQ9eB5xW9umaS4CIYkwcBZ1BUPJMCw8VXHx4g/edit?usp=drivesdk"
+        },
+        "name": "={{ $now.plus({ days: 7 }).plus({ years: 543 }).toFormat('d/M/yyyy') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -336,
+        -880
+      ],
+      "id": "c485d329-5bed-4455-8a96-728beeb8f4bc",
+      "name": "Copy ไฟล์ sheet",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $now.plus({ days: -1 }).plus({ years: 543 }).toFormat(\"d/M/yyyy\") }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -880
+      ],
+      "id": "b93bfc90-e7df-4c47-a2f0-68472efedf2f",
+      "name": "Search ไฟล์ sheet",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        288,
+        -880
+      ],
+      "id": "fab26678-4f2a-4d24-b5ef-ec2b00285748",
+      "name": "Delete ไฟล์ sheet",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\n\n// ดึงวันที่ปัจจุบันมาทำตัวอย่าง (แบบ พ.ศ.)\nconst now = new Date();\nconst todayThai = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear() + 543}`;\n\nreturn [\n  {\n    json: {\n      replyToken: item.replyToken,\n      replyText: \n        `🎟️ **กรุณากรอกข้อมูลเพื่อทำการจองตั๋วดังนี้:**\\n\\n` +\n        `จอง\\n` +\n        `👤 **ชื่อ-นามสกุล:**\\n` +\n        `📞 **เบอร์โทรศัพท์:**\\n` +\n        `📅 **วันที่ต้องการเดินทาง:** (เช่น ${todayThai})\\n` +\n        `⏰ **รอบเวลา:** (06:00, 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00)\\n` +\n        `🪑 **ที่นั่งที่ต้องการ:** (เช่น A1, A2)\\n` +\n        `💰 **ราคาที่นั่งละ 70 บาท**\\n\\n` +\n        `--- \\n` +\n        `💡 **ตัวอย่างการตอบกลับ:**\\n` +\n        `จอง\\n` +\n        `สมชาย สายลม\\n` +\n        `0812345678\\n` +\n        `${todayThai}\\n` +\n        `18:00\\n` +\n        `A1,A2\\n` +\n        `--- \\n\\n` +\n        `✅ เมื่อกรอกครบแล้ว ส่งข้อความกลับมาได้เลยครับ`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -480
+      ],
+      "id": "7ff17377-3d7d-44c4-bd5a-99a3e996f4df",
+      "name": "สร้างรูปแบบจอง"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.replyText) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1104,
+        -480
+      ],
+      "id": "dde95410-342f-4d6e-8535-19d1fd31c876",
+      "name": "ส่ง",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messageText }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "แยกข้อมูลลูกค้าออกเป็น JSON ตาม schema ที่กำหนด\nข้อความอินพุตอาจเรียงบรรทัดดังนี้:\nชื่อ\nเบอร์โทร\nอีเมล\nที่นั่ง (คั่นด้วย comma)\nเวลา\n\nตัวอย่าง Input\nสมชาย สายลม\n0812345678\n3/3/2569\n18:00\nA1, A2\nกฎการแปลงข้อมูล:\n- ให้แปลงเวลาเป็นรูปแบบ H:MM\n- ถ้าเวลาเริ่มต้นด้วย 0 เช่น 06:00 หรือ 08:30 ให้ลบ 0 ด้านหน้าออก\n  ตัวอย่าง:\n  06:00 → 6:00\n  08:30 → 8:30\n- ถ้าเวลาเป็น 18:00 ให้คงเดิม\nOutput ที่ AI ควรได้\n{\n  \"name\": \"สมชาย สายลม\",\n  \"phone\": \"0812345678\",\n  \"date\": \"3/3/2569\",\n  \"time\": \"18:00\",\n  \"seats\": [\"A1\",\"A2\"]\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1200,
+        -64
+      ],
+      "id": "2271381e-ed1c-4484-a299-a0a6539be49b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        96
+      ],
+      "id": "70287aa0-2a5f-4731-b267-9a7a332cf9a3",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EqT0nDFYm07GS73C",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1280,
+        112
+      ],
+      "id": "be3536d0-714c-4632-af35-c234fa00f384",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"name\": \"สมชาย สายลม\",\n  \"phone\": \"0812345678\",\n  \"date\": \"3/3/2569\",\n  \"time\": \"18:00\",\n  \"seats\": [\"A1\",\"A2\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1424,
+        112
+      ],
+      "id": "435c0d27-464b-4ac4-8b72-f1c5b0a3060f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.fileId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('AI Agent').item.json.output.time }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2224,
+        0
+      ],
+      "id": "c53b6248-7ff6-4b35-b6b4-fd33231010f8",
+      "name": "เลือกเวลา1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json.output.date }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1552,
+        -64
+      ],
+      "id": "7894cd84-e3c8-4728-9858-ff33b224f7d7",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a1c12f48-ba9c-4f31-8259-d392bee2c36a",
+              "leftValue": "={{ $('Webhook').item.json.body.events[0].message.type }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        -224
+      ],
+      "id": "0c77c315-2c19-418d-82c9-4e4c4072075d",
+      "name": "เช็ครูป"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=อ่านข้อมูลจากสลิปโอนเงินนี้ และสรุปผลเป็น JSON เท่านั้น\nห้ามมีข้อความอื่นนอกจาก JSON\n\nโครงสร้างต้องเป็นแบบนี้:\n\n{\n  \"output\": {\n    \"amount\": number,\n    \"date\": \"YYYY-MM-DD\",\n    \"time\": \"HH:MM\",\n    \"sender\": \"string\",\n    \"receiver\": \"string\",\n    \"valid\": boolean\n  }\n}\n\nกติกา:\n- sender เอา นาย,น.ส.,นาง,ด.ช.,ด.ญ. ออก\n- amount ต้องเป็นตัวเลขเท่านั้น ห้ามมี comma หรือ ฿\n- date ต้องแปลงเป็นรูปแบบ YYYY-MM-DD\n- time ต้องเป็น 24 ชั่วโมง (HH:MM)\n- valid = true เมื่ออ่านข้อมูลครบและชัดเจน\n- valid = false ถ้าข้อมูลไม่ครบหรือไม่มั่นใจ",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1664,
+        -512
+      ],
+      "id": "c40434ed-b975-48ae-9f75-a7e63f48faec",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -304
+      ],
+      "id": "9f97d6b4-f409-4e3b-9f38-3a5ec01d2628",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "EqT0nDFYm07GS73C",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1696,
+        -304
+      ],
+      "id": "cc62c2ed-e214-4a4e-8b68-b17f07fa8301",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"output\": {\n    \"amount\": 140,\n    \"date\": \"2026-03-03\",\n    \"time\": \"19:43\",\n    \"sender\": \"สมชาย ใจดี\",\n    \"receiver\": \"บริษัท รถบัส\",\n    \"valid\": true\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1872,
+        -304
+      ],
+      "id": "2b60c0a3-88da-478c-99cc-b43b610a1f0e",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const targetDate = $now\n  .minus({ days: 1 })\n  .plus({ years: 543 })\n  .toFormat(\"d/M/yyyy\");\n\n// ดึงไฟล์ทั้งหมดจาก Search\nconst items = $input.all();\n\n// กรองเฉพาะไฟล์ที่ชื่อ = วันที่เป๊ะ ๆ\nconst matched = items.filter(item => item.json.name === targetDate);\n\nreturn matched;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -880
+      ],
+      "id": "83eaf0f3-3137-445e-b9ef-33fd076b8286",
+      "name": "เช็ควันให้ตรง"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs",
+          "mode": "list",
+          "cachedResultName": "ชำระเงิน",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "รายการ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "เบอร์โทร": "={{ $json['เบอร์โทร'] }}",
+            "วันที่เดินทาง": "={{ $json['วันที่เดินทาง'] }}",
+            "เวลาเดินทาง": "={{ $json['เวลาเดินทาง'] }}",
+            "ชื่อผู้จอง": "={{ $json['ชื่อผู้จอง'] }}",
+            "ที่นั่ง": "={{ $json['ที่นั่ง'] }}",
+            "ราคารวม": "={{ $json['ราคารวม'] }}",
+            "สถานะการชำระเงิน": "={{ $json['สถานะการชำระเงิน'] }}",
+            "id": "={{ $('Edit Fields').item.json.userId }}",
+            "ลำดับ": "==ROW()-1"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "ลำดับ",
+              "displayName": "ลำดับ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่เดินทาง",
+              "displayName": "วันที่เดินทาง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "เวลาเดินทาง",
+              "displayName": "เวลาเดินทาง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ชื่อผู้จอง",
+              "displayName": "ชื่อผู้จอง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "เบอร์โทร",
+              "displayName": "เบอร์โทร",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ที่นั่ง",
+              "displayName": "ที่นั่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ราคารวม",
+              "displayName": "ราคารวม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สถานะการชำระเงิน",
+              "displayName": "สถานะการชำระเงิน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3040,
+        -80
+      ],
+      "id": "e1e45ea4-c6af-423a-b12b-4aaac42c43a5",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs",
+          "mode": "list",
+          "cachedResultName": "ชำระเงิน",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "รายการ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "สถานะการชำระเงิน",
+              "lookupValue": "รอชำระ"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2016,
+        -512
+      ],
+      "id": "a6f439a7-433b-435c-b843-e6b8e7498a64",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json['วันที่เดินทาง'] }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2880,
+        -608
+      ],
+      "id": "441e0aa2-200e-4c76-a227-d7b0c12e33ae",
+      "name": "Search files and folders2",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.matched_folder_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json['เวลาเดินทาง'] }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ที่นั่ง": "={{ $json['ที่นั่ง'] }}",
+            "ว่าง/ไม่ว่าง": "={{ $json['ว่าง/ไม่ว่าง'] }}"
+          },
+          "matchingColumns": [
+            "ที่นั่ง"
+          ],
+          "schema": [
+            {
+              "id": "ที่นั่ง",
+              "displayName": "ที่นั่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ว่าง/ไม่ว่าง",
+              "displayName": "ว่าง/ไม่ว่าง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3280,
+        -608
+      ],
+      "id": "427a2ef3-64e1-49f7-8c05-bb4a4bad6448",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs",
+          "mode": "list",
+          "cachedResultName": "ชำระเงิน",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "รายการ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ลำดับ": "={{ $json['ลำดับ'] }}",
+            "วันที่เดินทาง": "={{ $json['วันที่เดินทาง'] }}",
+            "เวลาเดินทาง": "={{ $json['เวลาเดินทาง'] }}",
+            "ชื่อผู้จอง": "={{ $json['ชื่อผู้จอง'] }}",
+            "เบอร์โทร": "={{ $json['เบอร์โทร'] }}",
+            "ที่นั่ง": "={{ $json['ที่นั่ง'] }}",
+            "ราคารวม": "={{ $json['ราคารวม'] }}",
+            "สถานะการชำระเงิน": "={{ $json['สถานะการชำระเงิน'] }}"
+          },
+          "matchingColumns": [
+            "ลำดับ"
+          ],
+          "schema": [
+            {
+              "id": "ลำดับ",
+              "displayName": "ลำดับ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่เดินทาง",
+              "displayName": "วันที่เดินทาง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "เวลาเดินทาง",
+              "displayName": "เวลาเดินทาง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ชื่อผู้จอง",
+              "displayName": "ชื่อผู้จอง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "เบอร์โทร",
+              "displayName": "เบอร์โทร",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ที่นั่ง",
+              "displayName": "ที่นั่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ราคารวม",
+              "displayName": "ราคารวม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สถานะการชำระเงิน",
+              "displayName": "สถานะการชำระเงิน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2672,
+        -608
+      ],
+      "id": "5e286ea4-bc3c-46c6-a762-86b7fb95b639",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item.json;\n\n// วันที่ปัจจุบัน\nconst now = new Date();\n\n// แปลงเป็นวัน/เดือน/ปี พ.ศ.\nconst day = now.getDate();\nconst month = now.getMonth() + 1;\nconst yearBE = now.getFullYear() + 543;\n\nconst todayThai = `${day}/${month}/${yearBE}`;\n\nreturn [\n  {\n    json: {\n      replyToken: item.replyToken,\n      replyText: \n        `🔍 **ตรวจสอบที่นั่งว่าง**\\n\\n` +\n        `กรุณาระบุ **วัน/เดือน/ปี** และ **รอบเวลา**\\n` +\n        `ที่ท่านต้องการตรวจสอบครับ\\n\\n` +\n        `📝 **รูปแบบการพิมพ์:**\\n` +\n        `\\`วัน/เดือน/ปี เวลา\\`\\n` +\n        `*(ตัวอย่าง: ${todayThai} 06:00)*\\n\\n` +\n        `--- \\n\\n` +\n        `⏰ **รอบเวลาที่เปิดให้บริการ:**\\n` +\n        `• 🌅 เช้า: 06:00 | 08:00 | 10:00\\n` +\n        `• ☀️ บ่าย: 12:00 | 14:00 | 16:00\\n` +\n        `• 🌙 เย็น: 18:00 | 20:00\\n\\n` +\n        `💡 *คำแนะนำ: ท่านสามารถพิมพ์ตามตัวอย่างเพื่อรับข้อมูลได้ทันทีครับ*`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        224
+      ],
+      "id": "bebe44c5-91ed-41df-9a92-17aeb1ba5920",
+      "name": "สร้างรูปแบบ"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs",
+          "mode": "list",
+          "cachedResultName": "ชำระเงิน",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "รายการ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "สถานะการชำระเงิน",
+              "lookupValue": "รอชำระ"
+            },
+            {
+              "lookupColumn": "สถานะการชำระเงิน",
+              "lookupValue": "ชำระเงินแล้ว"
+            }
+          ]
+        },
+        "combineFilters": "OR",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        912
+      ],
+      "id": "7350d472-afdd-4606-a4ef-6c8c842ba9c2",
+      "name": "Get row(s) in sheet1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs",
+          "mode": "list",
+          "cachedResultName": "ชำระเงิน",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "รายการ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1TC1GLtVyni_0XnQKXk3ui_pWp4uJmrsBoJ2cw8ZWsqs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "ลำดับ": "={{ $json['ลำดับ'] }}",
+            "วันที่เดินทาง": "={{ $json['วันที่เดินทาง'] }}",
+            "เวลาเดินทาง": "={{ $json['เวลาเดินทาง'] }}",
+            "ชื่อผู้จอง": "={{ $json['ชื่อผู้จอง'] }}",
+            "เบอร์โทร": "={{ $json['เบอร์โทร'] }}",
+            "ที่นั่ง": "={{ $json['ที่นั่ง'] }}",
+            "ราคารวม": "={{ $json['ราคารวม'] }}",
+            "สถานะการชำระเงิน": "={{ $json.command }}"
+          },
+          "matchingColumns": [
+            "ลำดับ"
+          ],
+          "schema": [
+            {
+              "id": "ลำดับ",
+              "displayName": "ลำดับ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่เดินทาง",
+              "displayName": "วันที่เดินทาง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "เวลาเดินทาง",
+              "displayName": "เวลาเดินทาง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ชื่อผู้จอง",
+              "displayName": "ชื่อผู้จอง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "เบอร์โทร",
+              "displayName": "เบอร์โทร",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ที่นั่ง",
+              "displayName": "ที่นั่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ราคารวม",
+              "displayName": "ราคารวม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สถานะการชำระเงิน",
+              "displayName": "สถานะการชำระเงิน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2240,
+        848
+      ],
+      "id": "a2a8f3a3-7504-4157-a2a6-8ea11dc504fa",
+      "name": "Update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json['วันที่เดินทาง'] }}",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2448,
+        848
+      ],
+      "id": "2893ce74-50c6-47f6-a412-1643c89022eb",
+      "name": "Search files and folders3",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "QkHOwvHNF5xtK0Zq",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.fileId }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Update row in sheet2').item.json['เวลาเดินทาง'] }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ที่นั่ง": "={{ $json.seat }}",
+            "ว่าง/ไม่ว่าง": "ว่าง"
+          },
+          "matchingColumns": [
+            "ที่นั่ง"
+          ],
+          "schema": [
+            {
+              "id": "ที่นั่ง",
+              "displayName": "ที่นั่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ว่าง/ไม่ว่าง",
+              "displayName": "ว่าง/ไม่ว่าง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2848,
+        848
+      ],
+      "id": "6bac752d-2e2e-402d-b14d-1633e8548459",
+      "name": "Update row in sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "AZ0oL4q8bTNM8WyQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      message: [\n        \"สวัสดีครับ 🙏 ยินดีต้อนรับสู่บริการจองรถ\",\n        \"\",\n        \"คุณสามารถพิมพ์คำสั่งที่ต้องการได้เลยครับ:\",\n        \"🔹 พิมพ์ \\\"วิธีใช้งาน\\\" เพื่อทำการจองที่นั่ง\",\n        \"🔹 พิมพ์ \\\"เช็ครอบรถ\\\" เพื่อตรวจสอบตารางเดินรถ\",\n        \"🔹 พิมพ์ \\\"ยกเลิก\\\" เพื่อขอยกเลิกการจอง\",\n        \"\",\n        \"ขอบคุณครับ\"\n      ].join(\"\\n\")\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -64
+      ],
+      "id": "0ebc9e32-a190-4c44-bd6d-15828438edb2",
+      "name": "สร้างฟอร์มสวัสดี"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "83317ef5-b7f9-45ee-b0d4-e62ea4e797d3",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "จอง",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "090d577e-49d1-45ca-8254-6781752d76b8",
+              "leftValue": "={{ $('Webhook').item.json.body.events[0].message.type }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "4eafab78-504d-42e1-9471-7f4a9a893d28",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "วิธีใช้งาน",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        -304
+      ],
+      "id": "7c77a6ff-8127-4fb6-b916-d64e58baed17",
+      "name": "จอง,รูป"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0dabb316-ab81-4800-99e7-134dcb48d329",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "วิธีใช้งาน",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        -448
+      ],
+      "id": "7c51556c-9461-4387-b216-9278612eb7ad",
+      "name": "จอง"
+    },
+    {
+      "parameters": {
+        "jsCode": "// วันที่จาก AI\nconst aiDate = $items(\"AI Agent\")[0].json.output.date;\n\n// เวลาจาก AI\nconst aiTime = $items(\"AI Agent\")[0].json.output.time;\n\n// เวลาเที่ยวรถ (จองได้)\nconst busTimes = [\"6:00\",\"8:00\",\"10:00\",\"12:00\",\"14:00\",\"16:00\",\"18:00\",\"20:00\"];\n\n// ถ้าเวลาไม่ได้อยู่ในรอบรถ\nif (!busTimes.includes(aiTime)) {\n  return [{\n    status: \"error\",\n    message: \"กรุณาเลือกเวลาให้ถูกต้อง\"\n  }];\n}\n\n// ไฟล์ทั้งหมดจาก Google Drive\nconst driveFiles = $items(\"Search files and folders\");\n\n// หาไฟล์ที่ชื่อ ตรงกับวันที่แบบ exact match\nconst matched = driveFiles.find(f => f.json.name === aiDate);\n\nif (!matched) {\n  return [{\n    status: \"error\",\n    message: `ไม่พบไฟล์วันที่ ${aiDate}`\n  }];\n}\n\n// ส่งต่อเฉพาะไฟล์ที่ match\nreturn [{\n  status: \"success\",\n  fileId: matched.json.id,\n  fileName: matched.json.name,\n  date: aiDate,\n  time: aiTime\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -64
+      ],
+      "id": "b017a420-c167-4e8a-9e47-bb758f0d3b36",
+      "name": "ตวรจเช็ครหัสไฟล์"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงข้อมูลจาก AI Agent\nconst booking = $items(\"AI Agent\")[0].json.output;\n\n// ดึงข้อมูลจาก Google Sheet\nconst sheetRows = $items(\"เลือกเวลา1\").map(i => i.json);\n\n// =============================\n// 🔥 ตรวจสอบวันเวลา (โซนไทย)\n// =============================\n\nif (!booking.date || !booking.time) {\n  return [{\n    json: {\n      status: \"error\",\n      message: \"ไม่พบข้อมูลวันเวลาเดินทาง\"\n    }\n  }];\n}\n\n// แยกวัน/เดือน/ปี พ.ศ.\nconst [day, month, yearBE] = booking.date.split(\"/\").map(Number);\nconst yearAD = yearBE - 543;\n\n// แยกชั่วโมง/นาที\nconst [hour, minute] = booking.time.split(\":\").map(Number);\n\n// สร้างเวลา \"รอบรถ\" แบบ UTC แล้วลบ 7 ชม. เพื่อให้ตรงกับไทย\nconst bookingUTC = Date.UTC(yearAD, month - 1, day, hour - 7, minute);\n\n// เวลาปัจจุบันจริง (UTC timestamp)\nconst nowUTC = Date.now();\n\n// ถ้าเวลาปัจจุบันมากกว่าหรือเท่ากับรอบรถ → ห้ามจอง\nif (nowUTC >= bookingUTC) {\n  return [{\n    json: {\n      status: \"time_expired\",\n      message: \"รอบรถออกไปแล้ว กรุณาเลือกรอบใหม่\"\n    }\n  }];\n}\n\n// =============================\n// เช็คที่นั่ง\n// =============================\n\nconst selectedSeats = booking.seats || [];\n\nif (selectedSeats.length === 0) {\n  return [{\n    json: {\n      status: \"error\",\n      message: \"ไม่พบข้อมูลที่นั่ง\"\n    }\n  }];\n}\n\n// หาเฉพาะแถวที่ลูกค้าเลือก\nconst selectedRows = sheetRows.filter(row =>\n  selectedSeats.includes(row[\"ที่นั่ง\"])\n);\n\n// เช็คที่นั่งไม่ว่าง\nconst unavailable = selectedRows.filter(row =>\n  row[\"ว่าง/ไม่ว่าง\"] !== \"ว่าง\"\n);\n\nif (unavailable.length > 0) {\n  return [{\n    json: {\n      status: \"unavailable\",\n      message: \"ที่นั่งที่คุณเลือกไม่ว่าง\",\n      seats: unavailable.map(s => s[\"ที่นั่ง\"])\n    }\n  }];\n}\n\n// =============================\n// คำนวณราคา\n// =============================\n\nconst seatCount = selectedSeats.length;\nconst pricePerSeat = 70;\nconst total = seatCount * pricePerSeat;\n\nconst seatString = selectedSeats.join(\",\");\n\nreturn [{\n  json: {\n    วันที่เดินทาง: booking.date,\n    เวลาเดินทาง: booking.time,\n    ชื่อผู้จอง: booking.name,\n    เบอร์โทร: booking.phone,\n    ที่นั่ง: seatString,\n    ราคา: 70,\n    ราคารวม: total,\n    สถานะการชำระเงิน: \"รอชำระ\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        0
+      ],
+      "id": "ebd29ad8-95a4-4acd-b682-3b614b14d12e",
+      "name": "ตวรจเช็ค"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5f07ccf1-3998-4139-86b3-da1c5952cb33",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "=unavailable",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3040,
+        208
+      ],
+      "id": "e991be89-8bc1-4b5b-bd59-e0edadaf86dc",
+      "name": "ไม่ว่าง"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "06793521-4df5-4c01-b9c4-686102636691",
+              "leftValue": "={{ $('ตวรจเช็ค').item.json['สถานะการชำระเงิน'] }}",
+              "rightValue": "รอชำระ",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2832,
+        64
+      ],
+      "id": "82e43139-a273-4e7b-be12-214ad59a4712",
+      "name": "เช็คว่าง"
+    },
+    {
+      "parameters": {
+        "jsCode": "const replyToken = $('Edit Fields').item.json.replyToken;\n\nreturn [\n  {\n    json: {\n      replyToken: replyToken,\n      messages: [\n        {\n          type: \"text\",\n          text: `🚫 ขออภัยครับ รอบรถที่คุณเลือก \"ออกเดินทางไปแล้ว\"\n\n🕒 กรุณาเลือกดูรอบเวลาใหม่อีกครั้ง\nหากต้องการตรวจสอบตารางเดินรถ พิมพ์ \"เช็ครอบรถ\"`\n        }\n      ]\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        320
+      ],
+      "id": "e9d5dfc2-748d-4297-819b-95ddfd357cdc",
+      "name": "รถออกเดินทางไปแล้ว"
+    },
+    {
+      "parameters": {
+        "jsCode": "const replyToken = $('Edit Fields').item.json.replyToken;\n\nreturn [\n  {\n    json: {\n      replyToken: replyToken,\n      messages: [\n        {\n          type: \"text\",\n          text: `❌ ที่นั่งที่คุณเลือกไม่ว่าง กรุณาเลือกที่นั่งใหม่อีกครั้ง\nหากต้องการเช็คที่นั่งพิมพ์ \"เช็คที่นั่ง\"`\n        }\n      ]\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3280,
+        112
+      ],
+      "id": "5155b650-f4c2-4f1e-8da3-0404b918a3ac",
+      "name": "ที่นั่งที่คุณเลือกไม่ว่าง"
+    },
+    {
+      "parameters": {
+        "jsCode": "const amount = $input.first().json['ราคารวม'];\nconst phone = \"0902920594\";  // เบอร์รับเงิน\n\nreturn [{\n  qrUrl: `https://promptpay.io/${phone}/${amount}`,\n  message: `กรุณาชำระเงินจำนวน ${amount} บาท และส่งสลิปกลับมาเพื่อยืนยันการจอง`\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3248,
+        -80
+      ],
+      "id": "27caae6a-35b9-4476-8dd4-2f14ca313167",
+      "name": "สร้าง qr"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.message }}\"\n    },\n    {\n      \"type\": \"image\",\n      \"originalContentUrl\": \"{{ $json.qrUrl }}\",\n      \"previewImageUrl\": \"{{ $json.qrUrl }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3456,
+        -80
+      ],
+      "id": "c77ba909-fa35-490a-921d-f41e52786aa6",
+      "name": "ส่ง qr",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.messages[0].text) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3456,
+        320
+      ],
+      "id": "bfcfaefc-f1b8-42cb-9476-c981b3f1e4b6",
+      "name": "ส่งรถออกไปแล้ว",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.messages[0].text) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3456,
+        112
+      ],
+      "id": "88e7cc1f-bc91-4873-8380-ec571895cdf1",
+      "name": "ส่งที่นั่งไม่ว่าง",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api-data.line.me/v2/bot/message/{{$node[\"Webhook\"].json.body.events[0].message.id}}/content",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "Download"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1424,
+        -512
+      ],
+      "id": "e347e24a-eba1-498b-a5e5-259460e58e0c",
+      "name": "ดึงรูป slips",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ----- ดึงข้อมูลจาก AI -----\nconst slip = $items(\"AI Agent1\")[0].json.output;\n\n// ----- ดึงทุกแถวจากชีต -----\nconst rows = $items(\"Get row(s) in sheet\").map(i => i.json);\n\n// กันกรณีไม่มีข้อมูล\nif (!rows.length) {\n  return [{\n    json: {\n      status: \"no_data\",\n      message: \"ไม่พบข้อมูลในชีต\"\n    }\n  }];\n}\n\n// ----- เลือกแถวที่ลำดับมากที่สุด -----\nconst sheet = rows\n  .sort((a, b) => Number(b[\"ลำดับ\"]) - Number(a[\"ลำดับ\"]))[0];\n\n// ----- เตรียมชื่อ -----\nconst slipFirstName = (slip.sender || \"\")\n  .trim()\n  .split(\" \")[0]\n  .toLowerCase();\n\nconst bookingFirstName = (sheet[\"ชื่อผู้จอง\"] || \"\")\n  .trim()\n  .split(\" \")[0]\n  .toLowerCase();\n\n// ----- เช็คยอด -----\nconst slipAmount = Number(slip.amount);\nconst sheetAmount = Number(sheet[\"ราคารวม\"]);\n\nconst nameMatch = slipFirstName === bookingFirstName;\nconst amountMatch = slipAmount === sheetAmount;\n\n// ----- สร้างสถานะ -----\nlet status = \"not_match\";\nlet message = \"ชื่อและยอดเงินไม่ตรงกัน\";\n\n// clone sheet เพื่อความปลอดภัย\nlet updatedSheet = { ...sheet };\n\nif (nameMatch && amountMatch) {\n  status = \"match\";\n  message = \"ชื่อและยอดเงินตรงกัน\";\n  updatedSheet[\"สถานะการชำระเงิน\"] = \"ชำระเงินแล้ว\";\n\n} else if (!nameMatch && amountMatch) {\n  status = \"name_not_match\";\n  message = \"ยอดเงินตรง แต่ชื่อไม่ตรง\";\n\n} else if (nameMatch && !amountMatch) {\n  status = \"amount_not_match\";\n  message = \"ชื่อถูกต้อง แต่ยอดเงินไม่ตรง\";\n}\n\n// ----- return -----\nreturn [{\n  json: {\n    status,\n    message,\n    ...updatedSheet\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        -512
+      ],
+      "id": "07fa6231-9201-4f63-a40a-76a7fdbff765",
+      "name": "ตรวจสอบให้ตรงกัน"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e2ac3793-35f1-45de-bcac-e3ed4e089637",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "match",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2448,
+        -512
+      ],
+      "id": "29aa446e-08c3-4094-bfa9-e023e04f0bd1",
+      "name": "ตรง"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  // ใช้ Backticks ( ` ) เพื่อให้พิมพ์เว้นบรรทัดได้ง่ายและอ่านรู้เรื่อง\n  item.json.message = `❌ **ทำรายการไม่สำเร็จ**\n\n⚠️ สาเหตุ: ชื่อหรือจำนวนเงินไม่ตรง\n      \nกรุณาตรวจสอบข้อมูลแล้ว \"ทำรายการใหม่\" อีกครั้งนะครับ`;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -416
+      ],
+      "id": "613a2d32-9685-43b2-8d4f-10fe2127d700",
+      "name": "ทำรายการไม่สำเร็จ"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.message) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2912,
+        -416
+      ],
+      "id": "4cc1690d-d7a3-484c-ac59-a9ee8ef10563",
+      "name": "ส่งทำรายการไม่สำเร็จ",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงข้อมูลจาก node ก่อนหน้า\nconst sheet = $items(\"Update row in sheet1\")[0].json;\nconst driveItems = $items(\"Search files and folders2\");\n\n// --------- 1️⃣ เทียบวันที่ (normalize ก่อน) ---------\nfunction normalizeDate(dateStr) {\n  if (!dateStr) return \"\";\n  \n  const parts = dateStr.toString().trim().split(\"/\");\n  if (parts.length !== 3) return dateStr.trim();\n\n  const day = parts[0].padStart(2, \"0\");\n  const month = parts[1].padStart(2, \"0\");\n  const year = parts[2];\n\n  return `${day}/${month}/${year}`;\n}\n\nconst travelDate = normalizeDate(sheet[\"วันที่เดินทาง\"]);\n\n// หา folder ที่ชื่อวันที่ตรงกัน\nconst matchedFolder = driveItems.find(item => {\n  const folderName = normalizeDate(item.json.name);\n  return folderName === travelDate;\n});\n\nconst dateMatch = !!matchedFolder;\n\n\n// --------- 2️⃣ แยกที่นั่ง (แก้ใหม่) ---------\nconst seatsRaw = sheet[\"ที่นั่ง\"] || \"\";\n\n// รองรับ , ช่องว่าง และขึ้นบรรทัดใหม่ + กันที่นั่งซ้ำ\nconst seatsArray = [...new Set(\n  seatsRaw\n    .toString()\n    .split(/[, \\n]+/)\n    .map(s => s.trim().toUpperCase())\n    .filter(Boolean)\n)];\n\n\n// --------- 3️⃣ แตกเป็นหลาย items เพื่อ update ทีละที่นั่ง ---------\nreturn seatsArray.map(seat => ({\n  json: {\n    ...sheet,\n    \"ที่นั่ง\": seat,                 // ใช้ match กับ column ใน sheet\n    \"ว่าง/ไม่ว่าง\": \"ไม่ว่าง\",       // ค่าที่จะ update\n    date_match: dateMatch,\n    matched_folder_id: matchedFolder ? matchedFolder.json.id : null\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3088,
+        -608
+      ],
+      "id": "27fd3769-cf5c-40db-95ee-49816158c386",
+      "name": "ตรวจชื่อไฟล์"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// รวมที่นั่ง\nconst seats = items.map(i => i.json[\"ที่นั่ง\"]).join(\",\");\n\n// ใช้ข้อมูลจาก item แรก\nconst first = items[0].json;\n\nreturn [\n  {\n    json: {\n      ...first,\n      \"ที่นั่ง\": seats,\n      \"สถานะชำระเงิน\": \"ชำระเงินเรียบร้อยแล้ว\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3488,
+        -608
+      ],
+      "id": "1cb9ccf4-b0f1-49ca-b4ef-259cb7969a68",
+      "name": "ชำระเงินเรียบร้อยแล้ว"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Webhook').item.json.body.events[0].replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"ตั๋วโดยสารรถบัส\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"size\": \"mega\",\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"spacing\": \"md\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"🎫 ตั๋วโดยสารรถบัส\",\n              \"weight\": \"bold\",\n              \"size\": \"lg\"\n            },\n            {\n              \"type\": \"separator\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"spacing\": \"sm\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"วันที่: {{ $('ตรวจชื่อไฟล์').item.json['วันที่เดินทาง'] }}\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"เวลา: {{ $('ตรวจชื่อไฟล์').item.json['เวลาเดินทาง'] }}\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ชื่อผู้โดยสาร: {{ $('ตรวจชื่อไฟล์').item.json['ชื่อผู้จอง'] }}\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ที่นั่ง: {{ $json['ที่นั่ง'] }}\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ราคารวม: {{ $('ตรวจชื่อไฟล์').item.json['ราคารวม'] }} บาท\"\n                }\n              ]\n            },\n            {\n              \"type\": \"separator\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": \"สถานะ: {{ $('ตรวจชื่อไฟล์').item.json['สถานะการชำระเงิน'] }}\",\n              \"weight\": \"bold\",\n              \"color\": \"#00A000\"\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3696,
+        -608
+      ],
+      "id": "b18e5c0b-983e-48ed-b633-3af420bc3a78",
+      "name": "ส่งชำระเงินเรียบร้อยแล้ว",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n\n  const input = item.json.messageText || \"\";\n  const parts = input.trim().split(/\\s+/);\n\n  const dateStr = parts[0];\n  let timeStr = parts[1];\n\n  // แปลงเวลา 06:00 -> 6:00\n  if (timeStr) {\n    const [h, m] = timeStr.split(\":\");\n    timeStr = `${parseInt(h,10)}:${m}`;\n  }\n\n  const [day, month, yearBE] = dateStr.split(\"/\").map(Number);\n  const [hour, minute] = timeStr.split(\":\").map(Number);\n\n  const yearAD = yearBE - 543;\n\n  // เวลาเที่ยวรถ\n  const selected = new Date(yearAD, month - 1, day, hour, minute, 0);\n\n  // เวลาไทยปัจจุบัน\n  const nowThai = new Date(\n    new Date().toLocaleString(\"en-US\", { timeZone: \"Asia/Bangkok\" })\n  );\n\n  if (selected.getTime() <= nowThai.getTime()) {\n    return {\n      json: {\n        status: \"รถออกไปแล้ว\",\n        date: dateStr,\n        time: timeStr\n      }\n    };\n  }\n\n  return {\n    json: {\n      status: \"ยังไม่ถึงเวลา\",\n      date: dateStr,\n      time: timeStr\n    }\n  };\n\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        496
+      ],
+      "id": "3d14d758-32cc-405d-b072-8751150dadb8",
+      "name": "ตรวจเช็ครอบ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e742bb51-3e70-4d03-ac11-553768f07cfa",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ยังไม่ถึงเวลา",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        496
+      ],
+      "id": "f24d6476-2446-4217-a605-38e77c609504",
+      "name": "รอบรถ"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const status = item.json.status;\n  const date = item.json.date;\n  const time = item.json.time;\n\n  if (status === \"รถออกไปแล้ว\") {\n    item.json.replyMessage = `ขออภัยครับ รถเที่ยวเวลา ${time} ของวันที่ ${date} ได้ออกเดินทางไปแล้ว ไม่สามารถจองหรือแก้ไขได้ในขณะนี้`;\n  } else {\n    item.json.replyMessage = \"สถานะปกติ สามารถดำเนินการต่อได้\";\n  }\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        656
+      ],
+      "id": "ec0815ae-a0e5-4699-b54b-47970935661d",
+      "name": "รถออกไปแล้ว"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.replyMessage) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        656
+      ],
+      "id": "7f272af8-271e-4e53-93f9-37cd707c590d",
+      "name": "ส่งรถออกไปแล้ว1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const time = $items(\"รอบรถ\")[0].json.time;\n\n// เวลาที่อนุญาต\nconst allowedTimes = [\n  \"6:00\",\n  \"8:00\",\n  \"10:00\",\n  \"12:00\",\n  \"14:00\",\n  \"16:00\",\n  \"18:00\",\n  \"20:00\"\n];\n\n// เช็คว่าอยู่ในรายการไหม\nconst isValid = allowedTimes.includes(time);\n\nreturn [\n  {\n    json: {\n      time: time,\n      valid: isValid\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        464
+      ],
+      "id": "b1f25397-02e4-473c-9345-1b7eae1db074",
+      "name": "ตรวจเวลารถวิ่ง"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6973c944-5729-4f0f-ab37-1f81f975d934",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1520,
+        464
+      ],
+      "id": "fbe78bc1-5133-4414-a2ae-fa86e4f771de",
+      "name": "เช็ครอบ1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfor (const item of items) {\n  // ตรวจสอบเงื่อนไข ถ้าไม่พบรอบรถ\n  if (item.json.valid === false) {\n    item.json.message = [\n      \"❌ ขออภัยครับ ไม่พบรอบรถที่คุณเลือก\",\n      \"\",\n      \"💡 คำแนะนำ:\",\n      \"• กรุณาตรวจสอบ วัน/เวลา อีกครั้ง\",\n      \"• หรือพิมพ์ \\\"เช็ครอบรถ\\\" เพื่อดูตารางเดินรถทั้งหมดครับ\"\n    ].join(\"\\n\");\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        560
+      ],
+      "id": "ead981c9-9ac5-4d17-8891-b2e247d68c70",
+      "name": "ไม่พบรอบรถที่คุณเลือก"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.message) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2000,
+        560
+      ],
+      "id": "61933aaf-dcda-45bf-a457-911090be5068",
+      "name": "ส่งไม่พบรอบรถที่คุณเลือก",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "894c6b1f-db06-4aa4-9f69-2ce908fbe407",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "ยกเลิก",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "={{ false }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        944
+      ],
+      "id": "9e3ce532-610a-453f-b347-648995a337bc",
+      "name": "ยกเลิก"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "48dd3aed-0959-4fb2-8761-d5942e8bcf57",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "ยืนยัน",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1088,
+        928
+      ],
+      "id": "7785c718-7915-417f-ab15-819ff8c89f28",
+      "name": "ยืนยันยกเลิก"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\n\nitem.json.replyContent = `วิธียกเลิกการจอง\nกรุณาพิมพ์ตามรูปแบบนี้:\n\nยกเลิก\nสมชาย ใจดี\nA1,A2\nยืนยันการยกเลิก`;\n\nreturn [item];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        1104
+      ],
+      "id": "5158b515-c13b-41db-b376-c76ec2fe3ff8",
+      "name": "วิธียกเลิกการจอง"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.replyContent) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1600,
+        1104
+      ],
+      "id": "e4592714-4f23-424d-a5bf-f1c9c73595b7",
+      "name": "ส่งวิธียกเลิกการจอง",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ดึงข้อความจาก LINE\nconst text = $items(\"ยืนยันยกเลิก\")[0].json.messageText;\n\n// แยกข้อความ\nconst lines = text.split(\"\\n\");\n\nconst command = lines[0].trim();\nconst fullName = lines[1].trim();\nconst seat = lines[2].trim();\n\n// แยกชื่อ\nconst nameParts = fullName.split(\" \");\nconst firstName = nameParts[0] || \"\";\nconst lastName = nameParts[1] || \"\";\n\n// ดึงทุกแถวจาก Google Sheet\nconst rows = $items(\"Get row(s) in sheet1\");\n\nlet result = [];\n\nfor (const item of rows) {\n\n  const sheetName = (item.json[\"ชื่อผู้จอง\"] || \"\").trim();\n  const sheetSeat = (item.json[\"ที่นั่ง\"] || \"\").trim();\n\n  // เช็คข้อมูล\n  const nameMatch = sheetName === fullName;\n  const seatMatch = sheetSeat === seat;\n  const match = nameMatch && seatMatch;\n\n  // ถ้าตรงกันให้เอาข้อมูลออกมา\n  if (match) {\n    result.push({\n      json: {\n        command,\n        firstName,\n        lastName,\n        fullName,\n        seat,\n\n        sheetName,\n        sheetSeat,\n\n        nameMatch,\n        seatMatch,\n        match,\n\n        ...item.json\n      }\n    });\n  }\n}\n\n// ถ้าไม่เจอ\nif (result.length === 0) {\n  return [\n    {\n      json: {\n        found: false,\n        message: \"ไม่พบข้อมูลที่ตรงกัน\"\n      }\n    }\n  ];\n}\n\nreturn result;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        912
+      ],
+      "id": "a126e128-df4d-4949-99e7-719dbb12d867",
+      "name": "ตรวจข้อมูลยกเลิก"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e1001e9c-0ca5-4214-b111-c3d10eb6882a",
+              "leftValue": "={{ $json.match }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1808,
+        912
+      ],
+      "id": "6262847c-98b2-4c87-bed5-7bc4f796ce27",
+      "name": "ยกเลิก1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      message: \"❌ ไม่พบข้อมูลการยกเลิก\\nกรุณาตรวจสอบข้อมูลใหม่อีกครั้งครับ\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2240,
+        1056
+      ],
+      "id": "fe6efd52-583f-4e9d-b88e-cb2186592bf8",
+      "name": "ไม่พบข้อมูลการยกเลิก"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.message) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2448,
+        1056
+      ],
+      "id": "fee1e9e2-53f8-4012-81e7-17294c596575",
+      "name": "ส่งไม่พบข้อมูลการยกเลิก",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sheet = $items(\"Update row in sheet2\")[0].json;\nconst sheetDate = sheet[\"วันที่เดินทาง\"];\n\nconst seats = (sheet[\"ที่นั่ง\"] || \"\").split(\",\");\n\nconst files = $items(\"Search files and folders3\");\nconst match = files.find(f => f.json.name === sheetDate);\n\nif (!match) {\n  return [{ json: { error: \"ไม่พบไฟล์วันที่ตรงกัน\" } }];\n}\n\nreturn seats.map(seat => ({\n  json: {\n    fileId: match.json.id,\n    seat: seat.trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        848
+      ],
+      "id": "ac80d64b-b633-4b1a-a13f-76c5422735df",
+      "name": "ตรวจชื่อไฟล์1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงข้อมูลจาก Node ก่อนหน้าอย่างปลอดภัย\nconst bookingNode = $items(\"Update row in sheet2\")[0];\nif (!bookingNode) throw new Error(\"ไม่พบข้อมูลจาก node 'Update row in sheet2'\");\n\nconst booking = bookingNode.json;\n\n// 2. จัดการเรื่องที่นั่ง (ใช้ Filter เพื่อกันกรณีมีค่าว่าง)\nconst seats = $input.all()\n    .map(i => i.json[\"ที่นั่ง\"])\n    .filter(s => s) // กรองค่า null หรือ undefined ออก\n    .join(\", \");\n\n// 3. ดึงตัวแปรมาเก็บไว้ (Destructuring)\nconst { \n  \"วันที่เดินทาง\": date, \n  \"เวลาเดินทาง\": time, \n  \"ชื่อผู้จอง\": name \n} = booking;\n\n// 4. ส่งค่ากลับพร้อมการจัดรูปแบบข้อความ\nreturn [{\n    json: {\n        message: [\n            \"✅ ยกเลิกเรียบร้อย\",\n            \"\",\n            `📅 วันที่: ${date}`,\n            `⏰ เวลา: ${time}`,\n            `👤 ชื่อ: ${name}`,\n            `💺 ที่นั่ง: ${seats}`,\n            \"\",\n            \"ขอบคุณที่ใช้บริการครับ\"\n        ].join(\"\\n\")\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3056,
+        848
+      ],
+      "id": "5d9d2da0-83c7-4361-a915-6945b0c60af2",
+      "name": "ยกเลิกเรียบร้อย"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.message) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        3264,
+        848
+      ],
+      "id": "7087f011-92fa-4cfa-831a-be74122f8e37",
+      "name": "ส่งยกเลิกเรียบร้อย",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8de4b0e3-9020-4562-9fdc-4f90444faa56",
+              "leftValue": "={{ $json.messageText }}",
+              "rightValue": "ติดต่อเรา",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        -176
+      ],
+      "id": "f1842322-1eed-4fd4-bce8-ca5ad55509a4",
+      "name": "ติิดต่อ"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        -368
+      ],
+      "typeVersion": 1,
+      "id": "14f004b2-5cc3-4c99-bb28-b488f3959c8b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.replyText) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        592,
+        -288
+      ],
+      "id": "20e3ee78-794b-4121-9830-b7fccc99da4c",
+      "name": "ส่งตอบติดต่อ",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    replyText: \"หากต้องการติดต่อสอบถาม กรุณาโทรเบอร์ 0902920594\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -288
+      ],
+      "id": "34b1baee-42ce-48fb-b4b6-55d220c74f29",
+      "name": "สร้างฟอร์มติดต่อ"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "71ef6586-512a-4520-b85b-283cd829d4cb",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 1040,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -592,
+        -944
+      ],
+      "typeVersion": 1,
+      "id": "d8997577-e075-4090-b556-1ccd76b1b9d6",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "40407176-01e6-4761-ab62-7516f6bbf869",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        896,
+        -560
+      ],
+      "typeVersion": 1,
+      "id": "e99599f4-f757-49e4-a39e-7f5a936e85d5",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 448,
+        "width": 944,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1408,
+        -592
+      ],
+      "typeVersion": 1,
+      "id": "be0fac68-f2a5-4c6e-bd78-2a28b5990325",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 1184,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2640,
+        -656
+      ],
+      "typeVersion": 1,
+      "id": "611da890-42a7-4e83-8043-778e34669b1b",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2640,
+        -464
+      ],
+      "typeVersion": 1,
+      "id": "25289ad5-4eb7-4cfd-b4cb-0219a22e1b18",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 352,
+        "width": 1444,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "f0417632-634b-44e3-b268-58862dfd376e",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        288
+      ],
+      "typeVersion": 1,
+      "id": "d259997c-b705-4806-be92-71e200873aeb",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 336,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3248,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "d328b6e5-5add-4abf-8340-8bd401fb25da",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 576,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3008,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "729619c9-3463-4942-8a88-8d7a4249bfa9",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 208,
+        "width": 336,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        672,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "85b16e0c-be7a-4350-8b02-c1d6f3376670",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 160,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        864,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "52391d03-fa89-4c61-845e-c7e57e83fd64",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 160,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        416
+      ],
+      "typeVersion": 1,
+      "id": "5e7d806c-9c76-4768-8f00-9f3e8e0f2ad5",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 368,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1280,
+        608
+      ],
+      "typeVersion": 1,
+      "id": "94afffeb-62b9-47ee-960f-f87b93bf90ac",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "width": 368,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1744,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "9e77be2c-5d88-46c2-a2e9-a2f41a8909a7",
+      "name": "Sticky Note16"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 960,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1744,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "c4a6eb2a-38be-4058-bb46-54c21f629b89",
+      "name": "Sticky Note17"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 160,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        1376
+      ],
+      "typeVersion": 1,
+      "id": "3bb8f48e-7367-4479-a2d0-baade3b28753",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 368,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        1072
+      ],
+      "typeVersion": 1,
+      "id": "bc553bbd-9b1b-47ee-adb0-b8429d0d4709",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 368,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1360,
+        880
+      ],
+      "typeVersion": 1,
+      "id": "a240b76b-5a99-431e-a33d-c81b645116ea",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 1184,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2208,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "5163c8bd-6570-4c07-9414-abf07baa6d09",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "width": 368,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2208,
+        1024
+      ],
+      "typeVersion": 1,
+      "id": "0fe69dff-4554-44f4-b4a4-799450af3c44",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst checkDate = $node[\"ตรวจเช็ครอบ\"].json.date;\n\nlet fileId = null;\n\nfor (const item of items) {\n  const fileDate = item.json.name;\n\n  if (fileDate === checkDate) {\n    fileId = item.json.id;\n  }\n}\n\nreturn [\n  {\n    json: {\n      fileId: fileId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        368
+      ],
+      "id": "269bb257-bd05-4144-a236-243e48c52da2",
+      "name": "ตรวจชื่อไฟล์2"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 176,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2640,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "3658ebd7-9474-4ef6-884e-2d39a936d1c6",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1eb5baa8-fd62-4a0b-a815-87a30ab36eb7",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "=error",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1984,
+        -64
+      ],
+      "id": "d9a3e5ac-d01d-4483-8bd1-37d15020af85",
+      "name": "เช็คเวลา1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const baseMessage = \"⚠️ กรุณาเลือกเวลาให้ถูกต้อง\";\nconst times = [\"06:00\", \"08:00\", \"10:00\", \"12:00\", \"14:00\", \"16:00\", \"18:00\", \"20:00\"];\n\n// ตกแต่งข้อความโดยใช้การจอยรายการด้วยเครื่องหมาย | หรือขึ้นบรรทัดใหม่\nconst formattedTimes = times.join(\" | \");\n\nreturn {\n  status: \"error\",\n  message: `${baseMessage}\\n\\n🕒 ช่วงเวลาที่เปิดให้บริการ:\\n[ ${formattedTimes} ]\\n\\nโปรดพิมพ์หรือเลือกเวลาด้านบนอีกครั้งครับ`\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        -224
+      ],
+      "id": "117fbaf0-146b-43f9-84ce-baa2ff651bb7",
+      "name": "กรุณาเลือกเวลาให้ถูกต้อง"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('Edit Fields').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": {{ JSON.stringify($json.message) }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2912,
+        -224
+      ],
+      "id": "d49eddd8-751b-4ba0-94e1-3f57da8ab698",
+      "name": "ส่งกรุณาเลือกเวลาให้ถูกต้อง",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "hLUKgtRknQN4Cagm",
+          "name": "Bearer Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "จอง,รูป",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็ครอบ": {
+      "main": [
+        [
+          {
+            "node": "สร้างรูปแบบ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "เช็คเวลา",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สวัสดี": {
+      "main": [
+        [
+          {
+            "node": "ติิดต่อ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "เช็ครอบ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คเวลา": {
+      "main": [
+        [
+          {
+            "node": "ตรวจเช็ครอบ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ยกเลิก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เลือกที่นั่งว่าง": {
+      "main": [
+        [
+          {
+            "node": "ส่งที่นั่งว่าง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders1": {
+      "main": [
+        [
+          {
+            "node": "ตรวจชื่อไฟล์2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เลือกเวลา": {
+      "main": [
+        [
+          {
+            "node": "เลือกที่นั่งว่าง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตั้งเวลา": {
+      "main": [
+        [
+          {
+            "node": "Copy ไฟล์ sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy ไฟล์ sheet": {
+      "main": [
+        [
+          {
+            "node": "Search ไฟล์ sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search ไฟล์ sheet": {
+      "main": [
+        [
+          {
+            "node": "เช็ควันให้ตรง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้างรูปแบบจอง": {
+      "main": [
+        [
+          {
+            "node": "ส่ง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เลือกเวลา1": {
+      "main": [
+        [
+          {
+            "node": "ตวรจเช็ค",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "ตวรจเช็ครหัสไฟล์",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็ครูป": {
+      "main": [
+        [
+          {
+            "node": "ดึงรูป slips",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete ไฟล์ sheet": {
+      "main": [
+        []
+      ]
+    },
+    "เช็ควันให้ตรง": {
+      "main": [
+        [
+          {
+            "node": "Delete ไฟล์ sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "สร้าง qr",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "ตรวจสอบให้ตรงกัน",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders2": {
+      "main": [
+        [
+          {
+            "node": "ตรวจชื่อไฟล์",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "ชำระเงินเรียบร้อยแล้ว",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้างรูปแบบ": {
+      "main": [
+        [
+          {
+            "node": "ส่งแบบฟรอร์ม",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "ตรวจข้อมูลยกเลิก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders3": {
+      "main": [
+        [
+          {
+            "node": "ตรวจชื่อไฟล์1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "ยกเลิกเรียบร้อย",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้างฟอร์มสวัสดี": {
+      "main": [
+        [
+          {
+            "node": "ส่งตอบสวัสดีครับ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "จอง,รูป": {
+      "main": [
+        [
+          {
+            "node": "จอง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "สวัสดี",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "จอง": {
+      "main": [
+        [
+          {
+            "node": "สร้างรูปแบบจอง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "เช็ครูป",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตวรจเช็ครหัสไฟล์": {
+      "main": [
+        [
+          {
+            "node": "เช็คเวลา1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตวรจเช็ค": {
+      "main": [
+        [
+          {
+            "node": "เช็คว่าง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ไม่ว่าง": {
+      "main": [
+        [
+          {
+            "node": "ที่นั่งที่คุณเลือกไม่ว่าง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "รถออกเดินทางไปแล้ว",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คว่าง": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ไม่ว่าง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "รถออกเดินทางไปแล้ว": {
+      "main": [
+        [
+          {
+            "node": "ส่งรถออกไปแล้ว",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ที่นั่งที่คุณเลือกไม่ว่าง": {
+      "main": [
+        [
+          {
+            "node": "ส่งที่นั่งไม่ว่าง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้าง qr": {
+      "main": [
+        [
+          {
+            "node": "ส่ง qr",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ส่ง qr": {
+      "main": [
+        []
+      ]
+    },
+    "ดึงรูป slips": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจสอบให้ตรงกัน": {
+      "main": [
+        [
+          {
+            "node": "ตรง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรง": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ทำรายการไม่สำเร็จ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ทำรายการไม่สำเร็จ": {
+      "main": [
+        [
+          {
+            "node": "ส่งทำรายการไม่สำเร็จ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจชื่อไฟล์": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ชำระเงินเรียบร้อยแล้ว": {
+      "main": [
+        [
+          {
+            "node": "ส่งชำระเงินเรียบร้อยแล้ว",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจเช็ครอบ": {
+      "main": [
+        [
+          {
+            "node": "รอบรถ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "รอบรถ": {
+      "main": [
+        [
+          {
+            "node": "ตรวจเวลารถวิ่ง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "รถออกไปแล้ว",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "รถออกไปแล้ว": {
+      "main": [
+        [
+          {
+            "node": "ส่งรถออกไปแล้ว1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจเวลารถวิ่ง": {
+      "main": [
+        [
+          {
+            "node": "เช็ครอบ1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็ครอบ1": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ไม่พบรอบรถที่คุณเลือก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ไม่พบรอบรถที่คุณเลือก": {
+      "main": [
+        [
+          {
+            "node": "ส่งไม่พบรอบรถที่คุณเลือก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ยกเลิก": {
+      "main": [
+        [
+          {
+            "node": "ยืนยันยกเลิก",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ไม่เข้าใจคำสั่ง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ยืนยันยกเลิก": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "วิธียกเลิกการจอง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "วิธียกเลิกการจอง": {
+      "main": [
+        [
+          {
+            "node": "ส่งวิธียกเลิกการจอง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจข้อมูลยกเลิก": {
+      "main": [
+        [
+          {
+            "node": "ยกเลิก1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ยกเลิก1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ไม่พบข้อมูลการยกเลิก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ไม่พบข้อมูลการยกเลิก": {
+      "main": [
+        [
+          {
+            "node": "ส่งไม่พบข้อมูลการยกเลิก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจชื่อไฟล์1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ยกเลิกเรียบร้อย": {
+      "main": [
+        [
+          {
+            "node": "ส่งยกเลิกเรียบร้อย",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ติิดต่อ": {
+      "main": [
+        [
+          {
+            "node": "สร้างฟอร์มติดต่อ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "สร้างฟอร์มสวัสดี",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้างฟอร์มติดต่อ": {
+      "main": [
+        [
+          {
+            "node": "ส่งตอบติดต่อ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจชื่อไฟล์2": {
+      "main": [
+        [
+          {
+            "node": "เลือกเวลา",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คเวลา1": {
+      "main": [
+        [
+          {
+            "node": "กรุณาเลือกเวลาให้ถูกต้อง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "เลือกเวลา1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "กรุณาเลือกเวลาให้ถูกต้อง": {
+      "main": [
+        [
+          {
+            "node": "ส่งกรุณาเลือกเวลาให้ถูกต้อง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bbf226f7-d97f-4278-b46a-5e981a49b81c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2404b6d9ab337f3d811db0978db85286ad7989de04b3c14bff1f8ff270ccd8de"
+  },
+  "id": "4tJnlZgwXLPasfTW",
+  "tags": []
+}
