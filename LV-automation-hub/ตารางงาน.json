@@ -1,0 +1,1991 @@
+{
+  "name": "ตารางงาน",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bdf37886-36ac-4bbb-89ab-2a4d3d38dbab",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -736,
+        352
+      ],
+      "id": "6e48b571-fa76-42f9-8f02-172b6fab7a5f",
+      "name": "Webhook",
+      "webhookId": "bdf37886-36ac-4bbb-89ab-2a4d3d38dbab"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "สร้างงานใหม่",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6628b7c6-4a74-4081-8f61-4a84916c27fb"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "629402ca-d20e-4a01-963e-2b6f799eb703",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "รับงานแล้ว",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c9bc6827-564c-4b1e-abc8-a2bbd099cca1",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "มีผู้เข้าร่วมช่วยงาน",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "371aa03f-4783-4a07-a22b-d7e377577be7",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "ส่งงานเรียบร้อย",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "86498358-3851-4589-99a7-bc63302f2c7d",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "อัปเดต",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "949e141d-6eb5-4b12-8769-2f87abf561fb",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "ยกเลิก",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        288
+      ],
+      "id": "8c7be3e4-1302-46a4-863b-a30d95153321",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('Webhook').item.json.body.work_no }}",
+            "สถานะ": "={{ $('Webhook').item.json.body.status }}",
+            "ชื่องาน": "={{ $('Webhook').item.json.body.task_name }}",
+            "ระดับความสำคัญ": "={{ $json.body.priority }}",
+            "ผู้ดำเนินการ": "={{ $('Webhook').item.json.body.team_member_name }}",
+            "วันที่เริ่ม": "={{ $('Webhook').item.json.body.start_date }}",
+            "กำหนดส่ง": "={{ $('Webhook').item.json.body.end_date }}",
+            "ผู้รับผิดชอบ": "={{ $('Webhook').item.json.body.assigned_to_name }}",
+            "รายละเอียด": "={{ $json.body.description }}",
+            "หมายเหตุ": "=",
+            "เวลาที่ต้องส่ง": "={{ $json.body.due_time }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่องาน",
+              "displayName": "ชื่องาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ระดับความสำคัญ",
+              "displayName": "ระดับความสำคัญ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ผู้รับผิดชอบ",
+              "displayName": "ผู้รับผิดชอบ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ผู้ดำเนินการ",
+              "displayName": "ผู้ดำเนินการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่เริ่ม",
+              "displayName": "วันที่เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "กำหนดส่ง",
+              "displayName": "กำหนดส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เวลาที่ต้องส่ง",
+              "displayName": "เวลาที่ต้องส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หมายเหตุ",
+              "displayName": "หมายเหตุ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        880
+      ],
+      "id": "d94da953-4c53-469a-a491-382baca607eb",
+      "name": "อัปเดต",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.work_no }}",
+            "สถานะ": "={{ $json.body.status }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่องาน",
+              "displayName": "ชื่องาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ระดับความสำคัญ",
+              "displayName": "ระดับความสำคัญ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้รับผิดชอบ",
+              "displayName": "ผู้รับผิดชอบ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้ดำเนินการ",
+              "displayName": "ผู้ดำเนินการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่เริ่ม",
+              "displayName": "วันที่เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "กำหนดส่ง",
+              "displayName": "กำหนดส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หมายเหตุ",
+              "displayName": "หมายเหตุ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        1168
+      ],
+      "id": "8755ded7-04a1-4d17-97b3-d7e35d94974c",
+      "name": "ยกเลิก",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        800
+      ],
+      "id": "7b65406f-19e5-48fb-95d6-7b258902624f",
+      "name": "เช็คอัปเดต"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow ตารางงาน\\nพบปัญหาในการอัปเดตข้อมูล\\n'อัปเดต'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        880
+      ],
+      "id": "c00b4f6c-0b7f-41e0-8146-3868710ac491",
+      "name": "แจ้ง ERROR",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        1088
+      ],
+      "id": "989727ef-f6b4-4872-8586-bf45d36bd1db",
+      "name": "เช็คอัปเดต1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"C34017860a39d477a783cc0842f8253e9\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow ตารางงาน\\nพบปัญหาในการอัปเดตข้อมูล\\n'ยกเลิก'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        1168
+      ],
+      "id": "bf1f2527-7bc8-4faa-a14d-cdf610655aa8",
+      "name": "แจ้ง ERROR5",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"to\": \"C1fdf9d0af438e0e6eb38d58e3ec2bfc6\",\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"📢 มีงานใหม่มอบหมายถึง: \" + ($('Webhook').item.json.body.assigned_to_name || \"คุณ\"),\n        \"contents\": {\n          \"type\": \"bubble\",\n          \"size\": \"mega\",\n          \"header\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"backgroundColor\": \"#FF7E67\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"📢 แจ้งงานถึง: \" + ($('Webhook').item.json.body.assigned_to_name || \"ผู้รับผิดชอบ\"),\n                \"weight\": \"bold\",\n                \"color\": \"#ffffff\",\n                \"size\": \"xl\",\n                \"wrap\": true\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"ประเภท: \" + ($('Webhook').item.json.body.event || \"สร้างงานใหม่\"),\n                \"weight\": \"regular\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"wrap\": true,\n                \"margin\": \"sm\"\n              }\n            ]\n          },\n          \"body\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"spacing\": \"md\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🆔 หมายเลข\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.work_no || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📌 ชื่องาน\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.task_name || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📝 รายละเอียด\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.description || \"-\", \"color\": \"#555555\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              { \"type\": \"separator\", \"margin\": \"lg\", \"color\": \"#eeeeee\" },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"margin\": \"lg\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"👤 ผู้รับผิดชอบ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.assigned_to_name || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🗓️ กำหนดเสร็จ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": ($('Webhook').item.json.body.end_date ? $('Webhook').item.json.body.end_date.split('-').reverse().join('/') : \"-\"), \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              { \"type\": \"separator\", \"margin\": \"lg\", \"color\": \"#eeeeee\" },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"margin\": \"lg\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🔥 ความสำคัญ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.priority || \"-\", \"color\": \"#E74C3C\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              }\n            ]\n          },\n          \"footer\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"paddingStart\": \"20px\",\n            \"paddingEnd\": \"20px\",\n            \"paddingBottom\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"button\",\n                \"style\": \"primary\",\n                \"color\": \"#2ECC71\",\n                \"height\": \"sm\",\n                \"action\": {\n                  \"type\": \"uri\",\n                  \"label\": \"✅ คลิกเพื่อรับงาน\",\n                  \"uri\": $('Webhook').item.json.body.accept_link || \"http://192.168.2.72:8080\"\n                }\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        608,
+        -624
+      ],
+      "id": "bcff449e-0f4f-412e-bd5d-e69f746262f0",
+      "name": "HTTP Request8",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"to\": \"C1fdf9d0af438e0e6eb38d58e3ec2bfc6\",\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"✅ รับงานแล้ว: \" + ($('Webhook').item.json.body.assigned_to_name || \"ไม่ระบุชื่อ\"),\n        \"contents\": {\n          \"type\": \"bubble\",\n          \"size\": \"mega\",\n          \"header\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"backgroundColor\": \"#3498DB\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"👤 ผู้รับผิดชอบ (รับงานแล้ว):\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"weight\": \"bold\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": ($('Webhook').item.json.body.assigned_to_name || \"ยังไม่ได้ระบุ\"),\n                \"weight\": \"bold\",\n                \"color\": \"#ffffff\",\n                \"size\": \"xl\",\n                \"wrap\": true,\n                \"margin\": \"xs\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"ประเภท: \" + ($('Webhook').item.json.body.event || \"กำลังดำเนินการ\"),\n                \"weight\": \"regular\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"wrap\": true,\n                \"margin\": \"sm\"\n              }\n            ]\n          },\n          \"body\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"spacing\": \"md\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🆔 หมายเลข\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.work_no || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📌 ชื่องาน\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.task_name || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📝 รายละเอียด\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.description || \"-\", \"color\": \"#555555\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              { \"type\": \"separator\", \"margin\": \"lg\", \"color\": \"#eeeeee\" },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"margin\": \"lg\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🟢 สถานะ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.status || \"กำลังดำเนินการ\", \"color\": \"#27AE60\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🔥 ความสำคัญ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.priority || \"-\", \"color\": \"#E74C3C\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        -240
+      ],
+      "id": "8252d224-645c-449f-96a5-7c6d42e0d323",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"to\": \"C1fdf9d0af438e0e6eb38d58e3ec2bfc6\",\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"🔒 แจ้งเตือน: มีผู้รับงานของ \" + ($('Webhook').item.json.body.original_assignee_name || \"คุณ\") + \" ไปดำเนินการแล้ว\",\n        \"contents\": {\n          \"type\": \"bubble\",\n          \"size\": \"mega\",\n          \"header\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"backgroundColor\": \"#3498DB\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"🔒 แจ้งเตือนสถานะงาน\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"weight\": \"bold\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"มีผู้รับงานนี้ไปแล้ว\",\n                \"weight\": \"bold\",\n                \"color\": \"#ffffff\",\n                \"size\": \"xl\",\n                \"wrap\": true,\n                \"margin\": \"xs\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"สถานะ: \" + ($('Webhook').item.json.body.event || \"กำลังดำเนินการ\"),\n                \"weight\": \"regular\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"wrap\": true,\n                \"margin\": \"sm\"\n              }\n            ]\n          },\n          \"body\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"spacing\": \"md\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🆔 หมายเลข\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.work_no || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📌 ชื่องาน\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.task_name || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              { \"type\": \"separator\", \"margin\": \"lg\", \"color\": \"#eeeeee\" },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"margin\": \"lg\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🎯 คนที่ต้องทำ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.original_assignee_name || $('Webhook').item.json.body.assigned_to_name || \"ไม่ระบุ\", \"color\": \"#E67E22\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"✅ ผู้รับไปทำ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.assigned_to_name || \"-\", \"color\": \"#2980B9\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              { \"type\": \"separator\", \"margin\": \"lg\", \"color\": \"#eeeeee\" },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"margin\": \"lg\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📝 รายละเอียด\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.description || \"-\", \"color\": \"#555555\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🔥 ความสำคัญ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.priority || \"-\", \"color\": \"#E74C3C\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        160
+      ],
+      "id": "e3c6f42d-43c9-4e73-8c08-569f7fc9f56a",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"to\": \"C1fdf9d0af438e0e6eb38d58e3ec2bfc6\",\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"✅ ส่งงานเรียบร้อยโดย: \" + ($('Webhook').item.json.body.completed_by_name || \"ไม่ระบุชื่อ\"),\n        \"contents\": {\n          \"type\": \"bubble\",\n          \"size\": \"mega\",\n          \"header\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"backgroundColor\": \"#27AE60\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"text\",\n                \"text\": \"🎉 ผู้ดำเนินการ (ส่งงานแล้ว):\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"weight\": \"bold\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": ($('Webhook').item.json.body.completed_by_name || \"ไม่ระบุชื่อ\"),\n                \"weight\": \"bold\",\n                \"color\": \"#ffffff\",\n                \"size\": \"xl\",\n                \"wrap\": true,\n                \"margin\": \"xs\"\n              },\n              {\n                \"type\": \"text\",\n                \"text\": \"สถานะ: \" + ($('Webhook').item.json.body.event || \"เสร็จสมบูรณ์\"),\n                \"weight\": \"regular\",\n                \"color\": \"#ffffff\",\n                \"size\": \"sm\",\n                \"wrap\": true,\n                \"margin\": \"sm\"\n              }\n            ]\n          },\n          \"body\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"spacing\": \"md\",\n            \"paddingAll\": \"20px\",\n            \"contents\": [\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🆔 รหัสงาน\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.work_no || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"📌 ชื่องาน\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.task_name || \"-\", \"color\": \"#111111\", \"size\": \"sm\", \"flex\": 6, \"wrap\": true }\n                ]\n              },\n              { \"type\": \"separator\", \"margin\": \"lg\", \"color\": \"#eeeeee\" },\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"margin\": \"lg\",\n                \"contents\": [\n                  { \"type\": \"text\", \"text\": \"🔥 ความสำคัญ\", \"color\": \"#888888\", \"size\": \"sm\", \"flex\": 4, \"weight\": \"bold\" },\n                  { \"type\": \"text\", \"text\": $('Webhook').item.json.body.priority || \"-\", \"color\": \"#E74C3C\", \"size\": \"sm\", \"flex\": 6, \"weight\": \"bold\", \"wrap\": true }\n                ]\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"margin\": \"lg\",\n                \"spacing\": \"sm\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"📝 หมายเหตุ / ผลการทำงาน:\",\n                    \"color\": \"#888888\",\n                    \"size\": \"sm\",\n                    \"weight\": \"bold\"\n                  },\n                  {\n                    \"type\": \"box\",\n                    \"layout\": \"vertical\",\n                    \"backgroundColor\": \"#F8F9F9\",\n                    \"paddingAll\": \"10px\",\n                    \"cornerRadius\": \"8px\",\n                    \"contents\": [\n                      {\n                        \"type\": \"text\",\n                        \"text\": $('Webhook').item.json.body.remark || \"ไม่มีหมายเหตุเพิ่มเติม\",\n                        \"wrap\": true,\n                        \"color\": \"#555555\",\n                        \"size\": \"sm\"\n                      }\n                    ]\n                  }\n                ]\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        544
+      ],
+      "id": "9fbfa597-2ffc-4f9a-a216-900112d3b83b",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "13e77d53-e94f-4999-964c-4cd49abb52df",
+              "leftValue": "={{ $('Webhook').item.json.body.send_line }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        384,
+        -624
+      ],
+      "id": "bb6befcb-e1d2-4d82-8151-ec0d2fa84e03",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.work_no }}",
+            "สถานะ": "={{ $json.body.status }}",
+            "หมายเหตุ": "={{ $json.body.remark }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่องาน",
+              "displayName": "ชื่องาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ระดับความสำคัญ",
+              "displayName": "ระดับความสำคัญ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้รับผิดชอบ",
+              "displayName": "ผู้รับผิดชอบ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้ดำเนินการ",
+              "displayName": "ผู้ดำเนินการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่เริ่ม",
+              "displayName": "วันที่เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "กำหนดส่ง",
+              "displayName": "กำหนดส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หมายเหตุ",
+              "displayName": "หมายเหตุ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        544
+      ],
+      "id": "bb943ab1-02c3-4f00-abc2-6d3c890201de",
+      "name": "ส่งงานเรียบร้อย",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.work_no }}",
+            "สถานะ": "={{ $json.body.status }}",
+            "ผู้ดำเนินการ": "={{ $json.body.assigned_to_name }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่องาน",
+              "displayName": "ชื่องาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ระดับความสำคัญ",
+              "displayName": "ระดับความสำคัญ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้รับผิดชอบ",
+              "displayName": "ผู้รับผิดชอบ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้ดำเนินการ",
+              "displayName": "ผู้ดำเนินการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่เริ่ม",
+              "displayName": "วันที่เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "กำหนดส่ง",
+              "displayName": "กำหนดส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หมายเหตุ",
+              "displayName": "หมายเหตุ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        160
+      ],
+      "id": "8992f43c-9c95-4ff7-9966-2fdaf2bd60ed",
+      "name": "มีผู้เข้าร่วมช่วยงาน",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.work_no }}",
+            "สถานะ": "={{ $json.body.status }}",
+            "ผู้ดำเนินการ": "={{ $json.body.assigned_to_name }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่องาน",
+              "displayName": "ชื่องาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ระดับความสำคัญ",
+              "displayName": "ระดับความสำคัญ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้รับผิดชอบ",
+              "displayName": "ผู้รับผิดชอบ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ผู้ดำเนินการ",
+              "displayName": "ผู้ดำเนินการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่เริ่ม",
+              "displayName": "วันที่เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "กำหนดส่ง",
+              "displayName": "กำหนดส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หมายเหตุ",
+              "displayName": "หมายเหตุ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        -240
+      ],
+      "id": "c86f5a74-f9e5-4d62-96f9-6497cc84b240",
+      "name": "รับงานแล้ว",
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit?gid=0#gid=0",
+          "__regex": "https:\\/\\/(?:drive|docs)\\.google\\.com(?:\\/.*|)\\/d\\/([0-9a-zA-Z\\-_]+)(?:\\/.*|)"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Work",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1b3VzDGgqZmoqRoI21My1fB3nyntA6oySm4TQ5Cx8Yfg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.work_no }}",
+            "ชื่องาน": "={{ $json.body.task_name }}",
+            "รายละเอียด": "={{ $json.body.description }}",
+            "ระดับความสำคัญ": "={{ $json.body.priority }}",
+            "ผู้รับผิดชอบ": "={{ $json.body.assigned_to_name }}",
+            "วันที่เริ่ม": "={{ $json.body.start_date }}",
+            "กำหนดส่ง": "={{ $json.body.end_date }}",
+            "สถานะ": "={{ $json.body.status }}",
+            "เวลาที่ต้องส่ง": "={{ $json.body.due_time }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่องาน",
+              "displayName": "ชื่องาน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ระดับความสำคัญ",
+              "displayName": "ระดับความสำคัญ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ผู้รับผิดชอบ",
+              "displayName": "ผู้รับผิดชอบ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ผู้ดำเนินการ",
+              "displayName": "ผู้ดำเนินการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่เริ่ม",
+              "displayName": "วันที่เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "กำหนดส่ง",
+              "displayName": "กำหนดส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เวลาที่ต้องส่ง",
+              "displayName": "เวลาที่ต้องส่ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หมายเหตุ",
+              "displayName": "หมายเหตุ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        -624
+      ],
+      "id": "486b9087-ca51-4882-a38e-028cbc25713c",
+      "name": "สร้างงานใหม่",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nพบปัญหาในการอัปเดตข้อมูล\\n'ส่งงาน'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        608
+      ],
+      "id": "8230c485-93dd-47cf-b240-01ba0112dc07",
+      "name": "แจ้ง ERROR1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nพบปัญหาในการอัปเดตข้อมูล\\n'คนช่วยงาน'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        224
+      ],
+      "id": "0d093aca-30b9-4b7c-92c0-689fd7896663",
+      "name": "แจ้ง ERROR2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nพบปัญหาในการอัปเดตข้อมูล\\n'รับงาน'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        -160
+      ],
+      "id": "3a6a4508-16a5-47ae-a9dd-26dc8fd157c9",
+      "name": "แจ้ง ERROR3",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nพบปัญหาในการอัปเดตข้อมูล\\n'สร้างงาน'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        160,
+        -544
+      ],
+      "id": "fddbf3b7-3793-422b-a08b-f4d2f6a75b50",
+      "name": "แจ้ง ERROR4",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        464
+      ],
+      "id": "cc3e8cf9-1208-438c-9dfa-a8799b390aab",
+      "name": "เช็คอัปเดต2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        80
+      ],
+      "id": "a92d3ed7-dfbd-486b-9aa7-adececdd7554",
+      "name": "เช็คอัปเดต3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        -304
+      ],
+      "id": "68fa0ce3-e96e-4b61-9499-2e6522921c2e",
+      "name": "เช็คอัปเดต4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -64,
+        -688
+      ],
+      "id": "035e350f-65e3-4c7d-9b1c-ef6346d9989b",
+      "name": "เช็คอัปเดต5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "สร้างงานใหม่",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "รับงานแล้ว",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "มีผู้เข้าร่วมช่วยงาน",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ส่งงานเรียบร้อย",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "อัปเดต",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ยกเลิก",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "อัปเดต": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ยกเลิก": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต1": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ส่งงานเรียบร้อย": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "มีผู้เข้าร่วมช่วยงาน": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "รับงานแล้ว": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้างงานใหม่": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR4": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต2": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต3": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต4": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต5": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "eVHyzZ9z-j3fG3fUt3sLa"
+  },
+  "versionId": "f1774c2d-86e1-4144-94a6-ae61ef571741",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "505cdfd3c0d036c93bed760e5ab95ae33dbab87608194be34600985d0597b8d4"
+  },
+  "id": "UU-UfGFCTYaddiaFLVNOl",
+  "tags": []
+}

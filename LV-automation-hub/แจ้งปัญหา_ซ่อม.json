@@ -1,0 +1,801 @@
+{
+  "name": "แจ้งปัญหา/ซ่อม",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5fc4bb0f-427f-4c39-ac8e-7c1cbe8e2de0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -368,
+        -464
+      ],
+      "id": "2122491c-d089-4c2c-948b-4ea8ea0728c6",
+      "name": "Webhook",
+      "webhookId": "5fc4bb0f-427f-4c39-ac8e-7c1cbe8e2de0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    \"to\": \"Ud2db1cee9984ec796d96aba788b5c99e\",\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"มีการแจ้งปัญหา/ซ่อมใหม่ จากคุณ \" + $('Webhook').item.json.body.reporter_name,\n        \"contents\": {\n          \"type\": \"bubble\",\n          \"size\": \"kilo\",\n          \"body\": {\n            \"type\": \"box\",\n            \"layout\": \"vertical\",\n            \"contents\": [\n              {\n                \"type\": \"box\",\n                \"layout\": \"horizontal\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"🛠️\",\n                    \"size\": \"xl\",\n                    \"flex\": 0\n                  },\n                  {\n                    \"type\": \"text\",\n                    \"text\": \" แจ้งปัญหา/ซ่อมใหม่\",\n                    \"weight\": \"bold\",\n                    \"color\": \"#1DB446\",\n                    \"size\": \"xl\",\n                    \"flex\": 1,\n                    \"margin\": \"sm\",\n                    \"gravity\": \"center\"\n                  }\n                ],\n                \"alignItems\": \"center\"\n              },\n              {\n                \"type\": \"separator\",\n                \"margin\": \"md\"\n              },\n              {\n                \"type\": \"box\",\n                \"layout\": \"vertical\",\n                \"margin\": \"md\",\n                \"spacing\": \"sm\",\n                \"contents\": [\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"รหัสแจ้งซ่อม: \" + $('Webhook').item.json.body.ticket_no,\n                    \"size\": \"sm\",\n                    \"color\": \"#333333\"\n                  },\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"ผู้แจ้ง: \" + $('Webhook').item.json.body.reporter_name,\n                    \"size\": \"sm\",\n                    \"color\": \"#333333\"\n                  },\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"แผนก: \" + $('Webhook').item.json.body.department_name,\n                    \"size\": \"sm\",\n                    \"color\": \"#333333\",\n                    \"wrap\": true\n                  },\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"อุปกรณ์: \" + $('Webhook').item.json.body.device_name,\n                    \"size\": \"sm\",\n                    \"color\": \"#333333\",\n                    \"wrap\": true\n                  },\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"รายละเอียด: \" + $('Webhook').item.json.body.problem_desc,\n                    \"size\": \"sm\",\n                    \"color\": \"#333333\",\n                    \"wrap\": true\n                  },\n                  {\n                    \"type\": \"text\",\n                    \"text\": \"เวลา: \" + $('Webhook').item.json.body.report_datetime,\n                    \"size\": \"sm\",\n                    \"color\": \"#333333\"\n                  }\n                ]\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        784,
+        -736
+      ],
+      "id": "f36e761d-86a9-4e98-9942-63604e533c36",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงข้อมูลวันที่ปัจจุบันสำหรับใช้เป็นเวลาสร้างเอกสาร (ด้านล่างรายงาน)\nconst today = new Date();\n\n// คำนวณหา \"เดือน/ปี\" ของ \"เดือนที่แล้ว\" สำหรับแสดงบนหัวรายงาน\nconst lastMonthDate = new Date();\nlastMonthDate.setMonth(lastMonthDate.getMonth() - 1); \nconst targetYear = lastMonthDate.getFullYear();\n\n// --- สร้างอาร์เรย์ชื่อเดือนภาษาไทย ---\nconst thaiMonths = [\n    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', \n    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'\n];\nconst displayMonthName = thaiMonths[lastMonthDate.getMonth()];\nconst displayYearTH = targetYear + 543; \n\nlet count = 0; \nlet tableRows = '';\n\n// --- ตัวแปรสำหรับเก็บข้อมูลสรุปยอด ---\nlet countPending = 0;\nlet countInProgress = 0;\nlet countCompleted = 0;\nlet countCancelled = 0; // <--- เพิ่มตัวแปรนับยอด ยกเลิก ตรงนี้\nlet deviceCounts = {};\n\n// 2. วนลูปเช็คข้อมูลทุกแถวที่ดึงมาจาก Google Sheets\nfor (let item of $input.all()) {\n    \n    // กรองสถานะที่ถูกลบออก (ข้ามไม่เอามาทำรายงาน)\n    if (item.json['สถานะ'] === 'ถูกลบออกจากระบบ') {\n        continue;\n    }\n\n    count++;\n    \n    let reportDate = item.json['วันที่แจ้งซ่อม'] || \"\";\n    let problemDesc = item.json['รายละเอียดปัญหา'] || item.json['รายระเอียดปัญหา'] || '-';\n    problemDesc = String(problemDesc).replace(/\\n/g, '<br>');\n\n    reportDate = reportDate.replace(\" \", \"<br><span style='color: #888; font-size: 10px;'>เวลา: \");\n    if(reportDate.includes(\"<br>\")) reportDate += \" น.</span>\";\n\n    let rowBgColor = (count % 2 === 0) ? '#fafafa' : '#ffffff';\n\n    // --- ตั้งค่าสีของข้อความสถานะ และ นับยอดตามสถานะ ---\n    let statusText = item.json['สถานะ'] || '-';\n    let statusColor = '#555555'; \n    \n    if (statusText === 'รอดำเนินการ') {\n        statusColor = '#F39C12';\n        countPending++;\n    } else if (statusText.includes('กำลังซ่อม')) {\n        statusColor = '#3498db';\n        countInProgress++;\n    } else if (statusText.includes('ซ่อมเสร็จสิ้น')) {\n        statusColor = '#27ae60';\n        countCompleted++;\n    } else if (statusText.includes('ยกเลิก')) { // <--- เพิ่มเงื่อนไขตรวจสอบสถานะ \"ยกเลิก\"\n        statusColor = '#e74c3c'; // กำหนดให้เป็นสีแดง\n        countCancelled++;\n    }\n\n    // --- นับยอดตามอุปกรณ์ ---\n    let deviceName = item.json['อุปกรณ์'] || 'ไม่ระบุ';\n    if (deviceCounts[deviceName]) {\n        deviceCounts[deviceName]++;\n    } else {\n        deviceCounts[deviceName] = 1;\n    }\n\n    tableRows += `\n    <tr style=\"background-color: ${rowBgColor};\">\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; text-align: center; color: #555; white-space: nowrap; vertical-align: top;\">${item.json['ID'] || '-'}</td>\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; color: #333; font-weight: bold; vertical-align: top;\">${item.json['ผู้แจ้ง'] || '-'}</td>\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; color: #555; vertical-align: top;\">${item.json['แผนก'] || '-'}</td>\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; color: #555; vertical-align: top;\">${item.json['อุปกรณ์'] || '-'}</td>\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; color: #555; line-height: 1.5; vertical-align: top;\">${problemDesc}</td>\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; text-align: center; color: #333; vertical-align: top;\">${reportDate}</td>\n        <td style=\"padding: 12px 5px; border-bottom: 1px solid #eeeeee; text-align: center; font-weight: bold; color: ${statusColor}; white-space: nowrap; vertical-align: top;\">${statusText}</td>\n    </tr>`;\n}\n\n// --- สร้าง HTML สรุปยอดอุปกรณ์ (เรียงจากมากไปน้อย และดัน 'อื่นๆ' ไว้ล่างสุด) ---\nlet sortedDevices = Object.entries(deviceCounts).sort((a, b) => {\n    if (a[0] === 'อื่นๆ') return 1;  \n    if (b[0] === 'อื่นๆ') return -1; \n    return b[1] - a[1];             \n});\nlet deviceSummaryHtml = '<table style=\"width: 100%; border-collapse: collapse; font-size: 13px;\">';\nfor (let i = 0; i < sortedDevices.length; i++) {\n    let dev = sortedDevices[i][0];\n    let devCount = sortedDevices[i][1];\n    deviceSummaryHtml += `\n        <tr>\n            <td style=\"padding: 4px 0; color: #555;\">${dev}</td>\n            <td style=\"padding: 4px 0; text-align: right; font-weight: bold; color: #333;\">${devCount}</td>\n        </tr>`;\n}\ndeviceSummaryHtml += '</table>';\nif(sortedDevices.length === 0) deviceSummaryHtml = '<div style=\"color: #999;\">- ไม่มีข้อมูล -</div>';\n\n// *** ลิงก์โลโก้ ***\nconst logoUrl = \"https://itp1.itopfile.com/ImageServer/z_itp_02102021a937/0/0/logolv-automationz-z594084060519.png\"; \n\nconst printDate = today.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok' });\nconst printTime = today.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute:'2-digit', hour12: false });\n\n// 3. สร้างโครงสร้าง HTML\nlet html = `<!DOCTYPE html>\n<html lang=\"th\">\n<head>\n    <meta charset=\"UTF-8\">\n    <link href=\"https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap\" rel=\"stylesheet\">\n    <style>\n        @page { size: A4 portrait; margin: 12mm 15mm; }\n        @media print {\n            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n            table { page-break-inside: auto; }\n            tr { page-break-inside: avoid; page-break-after: auto; }\n            thead { display: table-header-group; }\n            .summary-box { page-break-inside: avoid; }\n        }\n        .a4-container { width: 100%; max-width: 800px; margin: 0 auto; }\n    </style>\n</head>\n<body style=\"font-family: 'Sarabun', sans-serif; padding: 0; margin: 0; color: #333333; background-color: #ffffff; line-height: 1.4;\">\n    \n    <div class=\"a4-container\">\n        <table style=\"width: 100%; border-bottom: 2px solid #F39C12; padding-bottom: 10px; margin-bottom: 15px; border-collapse: collapse;\">\n            <tr>\n                <td style=\"width: 50%; vertical-align: bottom;\">\n                    <img src=\"${logoUrl}\" alt=\"Company Logo\" style=\"max-height: 120px; object-fit: contain;\">\n                </td>\n                <td style=\"width: 50%; text-align: right; vertical-align: bottom;\">\n                    <h2 style=\"margin: 0; color: #2C3E50; font-size: 20px; font-weight: 700;\">รายงานสรุปปัญหาและการแจ้งซ่อม</h2>\n                    <p style=\"margin: 5px 0 0 0; color: #7F8C8D; font-size: 14px;\">เดือน: <strong style=\"color: #F39C12;\">${displayMonthName} ${displayYearTH}</strong></p>\n                </td>\n            </tr>\n        </table>\n\n        <table style=\"border-collapse: collapse; width: 100%; font-size: 12px; table-layout: fixed; word-wrap: break-word;\">\n            <thead>\n                <tr style=\"background-color: #F39C12; color: #ffffff;\">\n                    <th style=\"width: 9%; padding: 10px 5px; border-radius: 4px 0 0 0; text-align: center; border-bottom: 2px solid #d68910;\">ID</th>\n                    <th style=\"width: 11%; padding: 10px 5px; text-align: left; border-bottom: 2px solid #d68910;\">ชื่อผู้แจ้ง</th>\n                    <th style=\"width: 12%; padding: 10px 5px; text-align: left; border-bottom: 2px solid #d68910;\">แผนก</th>\n                    <th style=\"width: 16%; padding: 10px 5px; text-align: left; border-bottom: 2px solid #d68910;\">อุปกรณ์</th>\n                    <th style=\"width: 30%; padding: 10px 5px; text-align: left; border-bottom: 2px solid #d68910;\">รายละเอียดปัญหา</th>\n                    <th style=\"width: 12%; padding: 10px 5px; text-align: center; border-bottom: 2px solid #d68910;\">วันที่แจ้ง</th>\n                    <th style=\"width: 10%; padding: 10px 5px; border-radius: 0 4px 0 0; text-align: center; border-bottom: 2px solid #d68910;\">สถานะ</th>\n                </tr>\n            </thead>\n            <tbody>\n                ${tableRows}\n            </tbody>\n        </table>\n\n        <div class=\"summary-box\" style=\"margin-top: 25px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;\">\n            <div style=\"background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0; padding: 10px 15px; font-weight: 600; color: #2C3E50;\">\n                สรุปภาพรวมปัญหา/การแจ้งซ่อม (Summary)\n            </div>\n            <table style=\"width: 100%; border-collapse: collapse;\">\n                <tr>\n                    <td style=\"width: 50%; padding: 15px; vertical-align: top; border-right: 1px solid #e0e0e0;\">\n                        <div style=\"font-size: 12px; color: #7f8c8d; margin-bottom: 8px;\">สรุปตามสถานะ</div>\n                        <table style=\"width: 100%; font-size: 13px; border-collapse: collapse;\">\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#F39C12;\">●</span> รอดำเนินการ</td><td style=\"text-align: right; font-weight: bold;\">${countPending}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#3498db;\">●</span> กำลังซ่อม</td><td style=\"text-align: right; font-weight: bold;\">${countInProgress}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#27ae60;\">●</span> ซ่อมเสร็จสิ้น</td><td style=\"text-align: right; font-weight: bold;\">${countCompleted}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#e74c3c;\">●</span> ยกเลิก/ลบ</td><td style=\"text-align: right; font-weight: bold;\">${countCancelled}</td></tr>\n                        </table>\n                        <hr style=\"border: 0; border-top: 1px dashed #cccccc; margin: 10px 0;\">\n                        <table style=\"width: 100%; font-size: 14px; border-collapse: collapse;\">\n                            <tr>\n                                <td style=\"font-weight: 600; color: #2C3E50;\">รวมจำนวนปัญหา/การแจ้งซ่อมทั้งสิ้น</td>\n                                <td style=\"text-align: right; font-weight: bold; color: #F39C12; font-size: 16px;\">${count} <span style=\"font-size: 12px; font-weight: normal; color:#555;\">รายการ</span></td>\n                            </tr>\n                        </table>\n                    </td>\n                    <td style=\"width: 50%; padding: 15px; vertical-align: top;\">\n                        <div style=\"font-size: 12px; color: #7f8c8d; margin-bottom: 8px;\">สรุปตามอุปกรณ์ที่มีปัญหา/การแจ้งซ่อม</div>\n                        ${deviceSummaryHtml}\n                    </td>\n                </tr>\n            </table>\n        </div>\n\n        <div style=\"text-align: right; color: #95a5a6; font-size: 11px; margin-top: 15px;\">\n            เอกสารสร้างอัตโนมัติเมื่อวันที่: ${printDate} เวลา ${printTime} น.\n        </div>\n    </div>\n\n</body>\n</html>`;\n\n// 4. ลบตัวอักษรเว้นบรรทัด (\\n) ออก\nhtml = html.replace(/\\r?\\n|\\r/g, \"\");\n\n// 5. ส่งค่าออกไป\nreturn [{ \n    json: { \n        reportMonthString: `${displayMonthName} ${displayYearTH}`,\n        totalTickets: count,\n        htmlContent: html \n    } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "ec226c65-b9ec-4f9f-9033-430624678bf5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v2.api2pdf.com/chrome/pdf/html",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "1143ba94-71d2-4d3b-93f2-5914d2843567"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"html\": {{ JSON.stringify($json.htmlContent) }},\n  \"options\": {\n    \"landscape\": true,\n    \"format\": \"A4\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        240,
+        0
+      ],
+      "id": "2582e75a-6ce9-4952-9c1f-92c9b97158c7",
+      "name": "HTTP Request1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.FileUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "763be69c-4d70-47c8-afa9-401e31a72a5a",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "lvautomationit@gmail.com",
+        "toEmail": "lvautomationonline@gmail.com",
+        "subject": "=🤖 นำส่งไฟล์ PDF สรุปปัญหาและการแจ้งซ่อม ประจำเดือน {{ $('Code in JavaScript').item.json.reportMonthString }}",
+        "emailFormat": "text",
+        "text": "แจ้งเตือนจากระบบสร้างรายงานอัตโนมัติ (Automated Report System)\nระบบได้จัดส่ง เอกสารสรุปยอดการจองห้องประชุม ประจำเดือนที่ผ่านมาให้ท่านเรียบร้อยแล้วครับ สามารถตรวจสอบรายละเอียดสถิติการใช้งานได้ในไฟล์แนบครับ",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "69ae4529-a302-4aa5-8534-e8f3da508c79",
+      "name": "Send email",
+      "webhookId": "422e133e-05f9-41e3-b10d-99d3e4f648cb",
+      "credentials": {
+        "smtp": {
+          "id": "G8i5o2MKp8khhwZp",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const filteredItems = [];\n\n// 1. คำนวณหา \"เดือน/ปี\" ของ \"เดือนที่แล้ว\"\nconst today = new Date();\ntoday.setMonth(today.getMonth() - 1); // ถอยวันที่กลับไป 1 เดือน\nconst targetMonth = String(today.getMonth() + 1).padStart(2, '0');\nconst targetYear = today.getFullYear();\n\n// รูปแบบสำหรับกรองข้อมูล เช่น /04/2026 (เพื่อให้ตรงกับรูปแบบ DD/MM/YYYY ใน Sheet)\nconst matchString = `/${targetMonth}/${targetYear}`; \n\n// ดึงก้อนข้อมูล Array แจ้งซ่อมออกมาจาก API (รองรับทั้งแบบมี .data และแบบแยก Item มาแล้ว)\nconst inputRecords = $input.first().json.data ? $input.first().json.data : $input.all().map(i => i.json);\n\n// วนลูปทุกรายการแจ้งซ่อมที่เข้ามา\nfor (const record of inputRecords) {\n  \n  // [แก้ไข] เปลี่ยนชื่อฟิลด์ให้ตรงกับข้อมูลจริง\n  let reportDate = record['วันที่แจ้งซ่อม'] || \"\";\n\n  // 2. ตรวจสอบว่าเป็นข้อมูลของเดือนที่แล้วหรือไม่ ถ้าไม่ใช่ให้ข้ามไปเลย\n  if (!reportDate.includes(matchString)) {\n    continue;\n  }\n\n  // ตรวจสอบว่ามีข้อมูลฟิลด์ 'แผนก'\n  if (record['แผนก']) {\n    // ใช้ Regex ดึงเฉพาะข้อความที่อยู่ข้างในวงเล็บ (...)\n    const match = record['แผนก'].match(/\\(([^)]+)\\)/);\n    \n    // ถ้าเจอข้อความในวงเล็บ ให้แทนที่ค่าเดิมด้วยข้อความนั้น\n    if (match && match[1]) {\n      record['แผนก'] = match[1]; \n    }\n  }\n  \n  // เก็บ item ที่ผ่านเงื่อนไข (เดือนที่แล้ว และ ไม่ได้ถูกลบ) ลงในอาร์เรย์ (n8n ต้องการรูปแบบที่มี json ครอบ)\n  filteredItems.push({ json: record });\n}\n\n// ส่งเฉพาะข้อมูลที่ผ่านการกรองและปรับแก้แล้วไปทำงานต่อ\nreturn filteredItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "c20d5f25-c666-47b3-946d-1b8fe990b7a0",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -592,
+        0
+      ],
+      "id": "4281c6bb-c29d-43f4-8e2a-ee8159ed679a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.2.72:8080/admin/api/api_get_bookings.php",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -384,
+        0
+      ],
+      "id": "4dcdf40f-dc5a-4b8e-9401-b6f49c5460df",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "แจ้งปัญหา/ซ่อม",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1b3a52c5-f637-4aa4-8e2b-f9669890e8cc"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "999261ea-c540-4708-8907-f8208e695d5d",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "แก้ไข",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -464
+      ],
+      "id": "269a3a6e-bb00-4a01-b9f3-ccf56f1835df",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow แจ้งปัญหา/ซ่อม\\nพบปัญหาในการอัปเดตข้อมูล\\n'แจ้งปัญหา/ซ่อม'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        -656
+      ],
+      "id": "b018995d-dbb2-437d-adf6-8e0ca69eee54",
+      "name": "แจ้ง ERROR6",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow แจ้งปัญหา/ซ่อม\\nพบปัญหาในการอัปเดตข้อมูล\\n'แก้ไข'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        -256
+      ],
+      "id": "07d1d094-45ac-481c-bc3f-cb06499852e5",
+      "name": "แจ้ง ERROR",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Report",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ชื่อ": "={{ $json.body.reporter_name }}",
+            "แผนก": "={{ $json.body.department_name }}",
+            "อุปกรณ์": "={{ $json.body.device_name }}",
+            "วันที่แจ้ง": "={{ $json.body.report_datetime }}",
+            "ID": "={{ $json.body.ticket_no }}",
+            "สถานะ": "={{ $json.body.status }}",
+            "รายละเอียดปัญหา": "={{ $json.body.problem_desc }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "อุปกรณ์",
+              "displayName": "อุปกรณ์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "รายละเอียดปัญหา",
+              "displayName": "รายละเอียดปัญหา",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่แจ้ง",
+              "displayName": "วันที่แจ้ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        -672
+      ],
+      "id": "ebd16471-0865-4b47-9dd3-a66d1ac17463",
+      "name": "แจ้งปัญหา/ซ่อม",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Report",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.ticket_no }}",
+            "ชื่อ": "={{ $json.body.reporter_name }}",
+            "แผนก": "={{ $json.body.department_name }}",
+            "อุปกรณ์": "={{ $json.body.device_name }}",
+            "รายระเอียดปัญหา": "={{ $json.body.problem_desc }}",
+            "วันที่แจ้ง": "={{ $json.body.report_datetime }}",
+            "สถานะ": "={{ $json.body.status }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "อุปกรณ์",
+              "displayName": "อุปกรณ์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "รายระเอียดปัญหา",
+              "displayName": "รายระเอียดปัญหา",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "วันที่แจ้ง",
+              "displayName": "วันที่แจ้ง",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        -272
+      ],
+      "id": "e54470cd-8d9c-42ca-baec-aab1d750bcf9",
+      "name": "แก้ไข",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        -352
+      ],
+      "id": "230ddae5-4032-490a-98ef-f496c470c34b",
+      "name": "เช็คแก้ไข"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        336,
+        -752
+      ],
+      "id": "cd5cf276-c746-45c0-8f2f-f1e33f157af3",
+      "name": "เช็คแจ้งปัญหา/ซ่อม"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "แจ้งปัญหา/ซ่อม",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แก้ไข",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้งปัญหา/ซ่อม": {
+      "main": [
+        [
+          {
+            "node": "เช็คแจ้งปัญหา/ซ่อม",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แก้ไข": {
+      "main": [
+        [
+          {
+            "node": "เช็คแก้ไข",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คแก้ไข": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คแจ้งปัญหา/ซ่อม": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "fac6ab4b-3ee7-41c8-b32e-1d0bdaebe3bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "505cdfd3c0d036c93bed760e5ab95ae33dbab87608194be34600985d0597b8d4"
+  },
+  "id": "IQ3gYdtddmvohkZUqAgDC",
+  "tags": []
+}

@@ -1,0 +1,2795 @@
+{
+  "name": "จองห้องประชุม",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1c82d8a4-27e6-4223-8621-0dad1a832696",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        480,
+        -480
+      ],
+      "id": "e441b338-eaf5-4e37-9519-b2e1f555937b",
+      "name": "Webhook",
+      "webhookId": "1c82d8a4-27e6-4223-8621-0dad1a832696"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -944,
+        256
+      ],
+      "id": "5ecb1755-d7bd-44f8-8840-555c99bf79f0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.2.72:8080/admin/api/api_get_ready_meetings.php",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -736,
+        256
+      ],
+      "id": "b80d9375-0a31-48d9-acb9-d4b0a98a8263",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.2.72:8080/admin/api/api_get_ready_meetings.php",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $('Split Out').item.json.id }},\n  \"notify_type\": \"ongoing\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        464,
+        32
+      ],
+      "id": "89181b46-0a00-41af-80f7-e94f727de709",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.ongoing",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        144
+      ],
+      "id": "21e61dcc-b9c7-453d-8199-7662a3872082",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://192.168.2.72:8080/admin/api/api_get_ready_meetings.php",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $('Split Out1').item.json.id }},\n  \"notify_type\": \"completed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        464,
+        288
+      ],
+      "id": "9b74c83d-185d-47a0-ba1c-aee781434c21",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data.completed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        416
+      ],
+      "id": "407840e4-5fd1-45fa-af2e-0ad92b6e4579",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงข้อมูลวันที่ปัจจุบันสำหรับใช้เป็นเวลาสร้างเอกสาร (ด้านล่างรายงาน)\nconst today = new Date();\n\n// คำนวณหา \"เดือน/ปี\" ของ \"เดือนที่แล้ว\" สำหรับแสดงบนหัวรายงาน\nconst lastMonthDate = new Date();\nlastMonthDate.setMonth(lastMonthDate.getMonth() - 1); \nconst targetYear = lastMonthDate.getFullYear();\n\nconst thaiMonths = [\n    'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', \n    'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'\n];\nconst displayMonthName = thaiMonths[lastMonthDate.getMonth()];\nconst displayYearTH = targetYear + 543; \n\nlet count = 0; \nlet tableRows = '';\n\nlet countPending = 0;\nlet countApproved = 0;\nlet countOngoing = 0;\nlet countCompleted = 0;\nlet countCancelled = 0;\n\n// 🌟 จุดที่แก้ไข: ตั้งค่าเริ่มต้นให้ทุกห้องเป็น 0 ไว้ก่อน\nlet roomCounts = {\n    \"ห้องประชุม 1 (ห้องเล็ก)\": 0,\n    \"ห้องประชุม 2 (ห้องใหญ่)\": 0,\n    \"ห้องประชุมผู้บริหาร\": 0,\n    \"ประชุมออนไลน์ (ไม่ต้องใช้ห้อง)\": 0\n};\n\nconst inputData = $input.all()[0].json.data || $input.all().map(item => item.json);\n\n// 2. วนลูปเช็คข้อมูลทุกแถว\nfor (let item of inputData) {\n    count++;\n    \n    let reportDate = item['วันที่'] || \"-\";\n    let startTime = item['เริ่ม'] || \"-\";\n    let endTime = item['เสร็จสิ้น'] || \"-\";\n    let dateTimeStr = `${reportDate}<br><span style='color: #888; font-size: 10px;'>เวลา: ${startTime} - ${endTime} น.</span>`;\n\n    let rowBgColor = (count % 2 === 0) ? '#fafafa' : '#ffffff';\n\n    let statusText = item['สถานะ'] || '-';\n    let statusColor = '#555555'; \n    \n    if (statusText.includes('รออนุมัติ')) {\n        statusColor = '#F39C12'; \n        countPending++;\n    } else if (statusText.includes('อนุมัติแล้ว') || statusText === 'อนุมัติ') {\n        statusColor = '#27ae60'; \n        countApproved++;\n    } else if (statusText.includes('กำลังประชุม')) {\n        statusColor = '#3498db'; \n        countOngoing++;\n    } else if (statusText.includes('เสร็จสิ้น')) {\n        statusColor = '#7f8c8d'; \n        countCompleted++;\n    } else if (statusText.includes('ยกเลิก') || statusText.includes('ไม่อนุมัติ')) {\n        statusColor = '#e74c3c'; \n        countCancelled++;\n    }\n\n    // 🌟 จุดที่แก้ไข: บวดยอดห้องประชุม (ถ้าระบบเจอชื่อแปลกๆ ก็จะแอดเพิ่มให้ด้วย)\n    let roomName = item['ห้องประชุม'] || 'ไม่ระบุ';\n    if (roomCounts[roomName] !== undefined) {\n        roomCounts[roomName]++;\n    } else {\n        roomCounts[roomName] = 1;\n    }\n\n    let linkHtml = '';\n    if (item['ลิงก์'] && item['ลิงก์'] !== '') {\n        linkHtml = `<br><a href=\"${item['ลิงก์']}\" style=\"color: #3498db; font-size: 10px; text-decoration: none;\">[ลิงก์ออนไลน์]</a>`;\n    }\n\n    tableRows += `\n    <tr style=\"background-color: ${rowBgColor};\">\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; text-align: center; color: #555; white-space: nowrap; vertical-align: top;\">${item['ID'] || '-'}</td>\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; color: #333; font-weight: bold; vertical-align: top;\">${item['หัวข้อประชุม'] || '-'}${linkHtml}</td>\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; color: #333; vertical-align: top;\">${item['ชื่อ'] || '-'}<br><span style=\"color: #888; font-size: 10px;\">${item['แผนก'] || '-'}</span></td>\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; color: #555; vertical-align: top;\">${roomName}</td>\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; text-align: center; color: #333; vertical-align: top;\">${dateTimeStr}</td>\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; text-align: center; color: #555; vertical-align: top;\">${item['จำนวน'] || '-'}</td>\n        <td style=\"padding: 6px 4px; border-bottom: 1px solid #eeeeee; text-align: center; font-weight: bold; color: ${statusColor}; white-space: nowrap; vertical-align: top;\">${statusText}</td>\n    </tr>`;\n}\n\n// --- สร้าง HTML สรุปยอดห้องประชุม (เรียงจากมากไปน้อย) ---\nlet sortedRooms = Object.entries(roomCounts).sort((a, b) => {\n    if (a[0].includes('ออนไลน์') || a[0].includes('ไม่ต้องใช้ห้อง')) return 1; \n    if (b[0].includes('ออนไลน์') || b[0].includes('ไม่ต้องใช้ห้อง')) return -1; \n    return b[1] - a[1];             \n});\n\nlet roomSummaryHtml = '<table style=\"width: 100%; border-collapse: collapse; font-size: 13px;\">';\nfor (let i = 0; i < sortedRooms.length; i++) {\n    let rm = sortedRooms[i][0];\n    let rmCount = sortedRooms[i][1];\n    roomSummaryHtml += `\n        <tr>\n            <td style=\"padding: 4px 0; color: #555;\">${rm}</td>\n            <td style=\"padding: 4px 0; text-align: right; font-weight: bold; color: #333;\">${rmCount}</td>\n        </tr>`;\n}\nroomSummaryHtml += '</table>';\nif(sortedRooms.length === 0) roomSummaryHtml = '<div style=\"color: #999;\">- ไม่มีข้อมูล -</div>';\n\nconst logoUrl = \"https://itp1.itopfile.com/ImageServer/z_itp_02102021a937/0/0/logolv-automationz-z594084060519.png\"; \n\nconst printDate = today.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok' });\nconst printTime = today.toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute:'2-digit', hour12: false });\n\n// 3. สร้างโครงสร้าง HTML\nlet html = `<!DOCTYPE html>\n<html lang=\"th\">\n<head>\n    <meta charset=\"UTF-8\">\n    <link href=\"https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap\" rel=\"stylesheet\">\n    <style>\n        @page { size: A4 portrait; margin: 12mm 15mm; }\n        @media print {\n            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n            table { page-break-inside: auto; }\n            tr { page-break-inside: avoid; page-break-after: auto; }\n            thead { display: table-header-group; }\n            .summary-box { page-break-inside: avoid; }\n        }\n        .a4-container { width: 100%; max-width: 800px; margin: 0 auto; }\n    </style>\n</head>\n<body style=\"font-family: 'Sarabun', sans-serif; padding: 0; margin: 0; color: #333333; background-color: #ffffff; line-height: 1.4;\">\n    \n    <div class=\"a4-container\">\n        <table style=\"width: 100%; border-bottom: 2px solid #F39C12; padding-bottom: 10px; margin-bottom: 15px; border-collapse: collapse;\">\n            <tr>\n                <td style=\"width: 45%; vertical-align: bottom;\">\n                    <img src=\"${logoUrl}\" alt=\"Company Logo\" style=\"max-height: 120px; object-fit: contain;\">\n                </td>\n                <td style=\"width: 55%; text-align: right; vertical-align: bottom;\">\n                    <h2 style=\"margin: 0; color: #2C3E50; font-size: 20px; font-weight: 700;\">รายงานสรุปการจองห้องประชุม</h2>\n                    <p style=\"margin: 5px 0 0 0; color: #7F8C8D; font-size: 14px;\">ประจำเดือน: <strong style=\"color: #F39C12;\">${displayMonthName} ${displayYearTH}</strong></p>\n                </td>\n            </tr>\n        </table>\n\n        <table style=\"border-collapse: collapse; width: 100%; font-size: 12px; table-layout: fixed; word-wrap: break-word;\">\n            <thead>\n                <tr style=\"background-color: #F39C12; color: #ffffff;\">\n                    <th style=\"width: 9%; padding: 8px 4px; border-radius: 4px 0 0 0; text-align: center; border-bottom: 2px solid #d68910;\">ID</th>\n                    <th style=\"width: 22%; padding: 8px 4px; text-align: left; border-bottom: 2px solid #d68910;\">หัวข้อประชุม</th>\n                    <th style=\"width: 16%; padding: 8px 4px; text-align: left; border-bottom: 2px solid #d68910;\">ผู้จอง</th>\n                    <th style=\"width: 20%; padding: 8px 4px; text-align: left; border-bottom: 2px solid #d68910;\">ห้องประชุม</th>\n                    <th style=\"width: 16%; padding: 8px 4px; text-align: center; border-bottom: 2px solid #d68910;\">วันที่ / เวลา</th>\n                    <th style=\"width: 5%; padding: 8px 4px; text-align: center; border-bottom: 2px solid #d68910;\">คน</th>\n                    <th style=\"width: 12%; padding: 8px 4px; border-radius: 0 4px 0 0; text-align: center; border-bottom: 2px solid #d68910;\">สถานะ</th>\n                </tr>\n            </thead>\n            <tbody>\n                ${tableRows}\n            </tbody>\n        </table>\n\n        <div class=\"summary-box\" style=\"margin-top: 25px; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden;\">\n            <div style=\"background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0; padding: 10px 15px; font-weight: 600; color: #2C3E50;\">\n                สรุปภาพรวมการจองห้องประชุม (Summary)\n            </div>\n            <table style=\"width: 100%; border-collapse: collapse;\">\n                <tr>\n                    <td style=\"width: 50%; padding: 15px; vertical-align: top; border-right: 1px solid #e0e0e0;\">\n                        <div style=\"font-size: 12px; color: #7f8c8d; margin-bottom: 8px;\">สรุปตามสถานะ</div>\n                        <table style=\"width: 100%; font-size: 13px; border-collapse: collapse;\">\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#F39C12;\">●</span> รออนุมัติ</td><td style=\"text-align: right; font-weight: bold;\">${countPending}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#27ae60;\">●</span> อนุมัติแล้ว</td><td style=\"text-align: right; font-weight: bold;\">${countApproved}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#3498db;\">●</span> กำลังประชุม</td><td style=\"text-align: right; font-weight: bold;\">${countOngoing}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#7f8c8d;\">●</span> ประชุมเสร็จสิ้น</td><td style=\"text-align: right; font-weight: bold;\">${countCompleted}</td></tr>\n                            <tr><td style=\"padding: 4px 0;\"><span style=\"color:#e74c3c;\">●</span> ยกเลิก / ไม่อนุมัติ</td><td style=\"text-align: right; font-weight: bold;\">${countCancelled}</td></tr>\n                        </table>\n                        <hr style=\"border: 0; border-top: 1px dashed #cccccc; margin: 10px 0;\">\n                        <table style=\"width: 100%; font-size: 14px; border-collapse: collapse;\">\n                            <tr>\n                                <td style=\"font-weight: 600; color: #2C3E50;\">รวมจำนวนการจองทั้งสิ้น</td>\n                                <td style=\"text-align: right; font-weight: bold; color: #F39C12; font-size: 16px;\">${count} <span style=\"font-size: 12px; font-weight: normal; color:#555;\">รายการ</span></td>\n                            </tr>\n                        </table>\n                    </td>\n                    <td style=\"width: 50%; padding: 15px; vertical-align: top;\">\n                        <div style=\"font-size: 12px; color: #7f8c8d; margin-bottom: 8px;\">สรุปตามห้องประชุม</div>\n                        ${roomSummaryHtml}\n                    </td>\n                </tr>\n            </table>\n        </div>\n\n        <div style=\"text-align: right; color: #95a5a6; font-size: 11px; margin-top: 15px;\">\n            เอกสารสร้างอัตโนมัติเมื่อวันที่: ${printDate} เวลา ${printTime} น.\n        </div>\n    </div>\n\n</body>\n</html>`;\n\nhtml = html.replace(/\\r?\\n|\\r/g, \"\");\n\nreturn [{ \n    json: { \n        reportMonthString: `${displayMonthName} ${displayYearTH}`,\n        totalBookings: count,\n        htmlContent: html \n    } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        704
+      ],
+      "id": "e1a4bc34-159b-4444-885e-1c19802f5cb4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://v2.api2pdf.com/chrome/pdf/html",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "1143ba94-71d2-4d3b-93f2-5914d2843567"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"html\": {{ JSON.stringify($json.htmlContent) }},\n  \"options\": {\n    \"landscape\": true,\n    \"format\": \"A4\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1072,
+        704
+      ],
+      "id": "3154e59d-f5bd-4e65-845c-2ef624ae7b1d",
+      "name": "HTTP Request5",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.FileUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1280,
+        704
+      ],
+      "id": "02825911-4de3-41c7-a87d-6ba4decc3a5e",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        704
+      ],
+      "id": "16721c4f-10a5-437e-97dd-dc2aa23e716a",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "url": "http://192.168.2.72:8080/admin/api/api_get_meetings.php",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        704
+      ],
+      "id": "71edb322-ec8f-4031-be6a-d378b5112f41",
+      "name": "HTTP Request7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. ดึงข้อมูลจากโหนด HTTP Request\nconst inputData = $input.all()[0].json.data;\n\n// 2. คำนวณหา เดือน และ ปี ของ \"เดือนที่แล้ว\" เพื่อใช้เป็นเกณฑ์คัดกรอง\nconst now = new Date();\nlet lastMonth = now.getMonth() - 1;\nlet targetYear = now.getFullYear();\n\n// กรณีที่เดือนปัจจุบันคือ มกราคม (0) เดือนที่แล้วจะเป็น ธันวาคม (11) ของปีก่อนหน้า\nif (lastMonth < 0) {\n    lastMonth = 11;\n    targetYear--;\n}\n\nconst resultData = [];\n\nfor (const item of inputData) {\n    // 3. ตรวจสอบข้อมูลวันที่ (สมมติว่า format จาก API คือ YYYY-MM-DD)\n    if (item['วันที่']) {\n        // แยกส่วนวันที่ด้วย \"-\"\n        const dateParts = item['วันที่'].split('-'); // [2026, 05, 11]\n        \n        const itemYear = parseInt(dateParts[0]);\n        const itemMonth = parseInt(dateParts[1]) - 1; // ลบ 1 เพราะใน JS เดือนเริ่มที่ 0-11\n\n        // 4. เงื่อนไข: คัดเอาเฉพาะข้อมูลที่ ปี และ เดือน ตรงกับเดือนที่แล้วเท่านั้น\n        if (itemYear === targetYear && itemMonth === lastMonth) {\n            \n            // --- ทำการ Cleaning ข้อมูลวันที่และแผนกไปพร้อมกันเลย ---\n            \n            // แปลงวันที่เป็น DD/MM/YYYY\n            item['วันที่'] = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;\n\n            // ตัดชื่อแผนกเอาเฉพาะภาษาไทยในวงเล็บ\n            if (item['แผนก']) {\n                const match = item['แผนก'].match(/\\((.*?)\\)/);\n                if (match && match[1]) {\n                    item['แผนก'] = match[1];\n                }\n            }\n\n            resultData.push(item);\n        }\n    }\n}\n\n// 5. ส่งเฉพาะข้อมูลที่ผ่านการกรองแล้วออกไป\nreturn { json: { data: resultData } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        704
+      ],
+      "id": "66277c82-c39a-4585-87ec-f90c7626a73f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ud2db1cee9984ec796d96aba788b5c99e\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"มีคำขอจองห้องประชุมใหม่ 📅\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📅 ขอจองห้องประชุมใหม่\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"color\": \"#1DB446\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"md\",\n              \"spacing\": \"sm\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"หัวข้อ: {{$('Webhook').item.json.body.topic}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ผู้จอง: {{$('Webhook').item.json.body.booker_name}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"แผนก: {{$('Webhook').item.json.body.department_name}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ห้อง: {{$('Webhook').item.json.body.room_name}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"วันที่: {{$('Webhook').item.json.body.meeting_date.split('-').reverse().join('/')}}\",\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"เวลา: {{$('Webhook').item.json.body.time_start}} - {{$('Webhook').item.json.body.time_end}}\",\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ผู้เข้าร่วม: {{$('Webhook').item.json.body.attendees}} ท่าน\",\n                  \"size\": \"sm\"\n                }\n              ]\n            }\n          ]\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"horizontal\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"color\": \"#28a745\",\n              \"action\": {\n                \"type\": \"uri\",\n                \"label\": \"อนุมัติ\",\n                \"uri\": \"{{$('Webhook').item.json.body.approve_link}}\"\n              }\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"color\": \"#dc3545\",\n              \"action\": {\n                \"type\": \"uri\",\n                \"label\": \"ไม่อนุมัติ\",\n                \"uri\": \"{{$('Webhook').item.json.body.cancel_link}}\"\n              }\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1776,
+        -1056
+      ],
+      "id": "263996aa-513e-4d3d-baff-aa0f3d3c4d36",
+      "name": "HTTP Request8",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "lvautomationit@gmail.com",
+        "toEmail": "lvautomationonline@gmail.com",
+        "subject": "=🤖 นำส่งไฟล์ PDF สรุปการจองห้องประชุมม ประจำเดือน {{ $('Code in JavaScript').item.json.reportMonthString }}",
+        "emailFormat": "text",
+        "text": "แจ้งเตือนจากระบบสร้างรายงานอัตโนมัติ (Automated Report System)\nระบบได้จัดส่ง รายงานสรุปการจองห้องประชุมประจำเดือนที่ผ่านมา ให้ท่านเรียบร้อยแล้วครับ สามารถตรวจสอบรายละเอียดและสถิติการใช้งานได้ในไฟล์แนบเลยครับ",
+        "options": {
+          "appendAttribution": false,
+          "attachments": "data"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1488,
+        704
+      ],
+      "id": "5a37dab3-9fd8-445a-a582-781985a7f944",
+      "name": "Send email1",
+      "webhookId": "422e133e-05f9-41e3-b10d-99d3e4f648cb",
+      "credentials": {
+        "smtp": {
+          "id": "G8i5o2MKp8khhwZp",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ud2db1cee9984ec796d96aba788b5c99e\",\n  \"messages\": [\n    {\n      \"type\": \"flex\",\n      \"altText\": \"มีการแก้ไขการจองห้องประชุม 📝\",\n      \"contents\": {\n        \"type\": \"bubble\",\n        \"body\": {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"📝 มีการแก้ไขการจอง\",\n              \"weight\": \"bold\",\n              \"size\": \"xl\",\n              \"color\": \"#F39C12\"\n            },\n            {\n              \"type\": \"separator\",\n              \"margin\": \"md\"\n            },\n            {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"margin\": \"md\",\n              \"spacing\": \"sm\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"หัวข้อ: {{$('Webhook').item.json.body.topic}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ผู้จอง: {{$('Webhook').item.json.body.booker_name}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"แผนก: {{$('Webhook').item.json.body.department_name}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ห้อง: {{$('Webhook').item.json.body.room_name}}\",\n                  \"wrap\": true,\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"วันที่: {{$('Webhook').item.json.body.meeting_date.split('-').reverse().join('/')}}\",\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"เวลา: {{$('Webhook').item.json.body.time_start}} - {{$('Webhook').item.json.body.time_end}}\",\n                  \"size\": \"sm\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ผู้เข้าร่วม: {{$('Webhook').item.json.body.attendees}} ท่าน\",\n                  \"size\": \"sm\"\n                }\n              ]\n            }\n          ]\n        },\n        \"footer\": {\n          \"type\": \"box\",\n          \"layout\": \"horizontal\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"color\": \"#28a745\",\n              \"action\": {\n                \"type\": \"uri\",\n                \"label\": \"อนุมัติ\",\n                \"uri\": \"{{$('Webhook').item.json.body.approve_link}}\"\n              }\n            },\n            {\n              \"type\": \"button\",\n              \"style\": \"primary\",\n              \"color\": \"#dc3545\",\n              \"action\": {\n                \"type\": \"uri\",\n                \"label\": \"ไม่อนุมัติ\",\n                \"uri\": \"{{$('Webhook').item.json.body.cancel_link}}\"\n              }\n            }\n          ]\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1776,
+        -352
+      ],
+      "id": "f64721a1-9b86-421a-9648-66d1fef17465",
+      "name": "HTTP Request9",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "njR0rsY6fIRjhh0x",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "จองห้องประชุม",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "0e60a6b2-df11-42fe-b75f-b7f745047a53"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "39be6fc6-0d89-4e2a-ab4c-7fa236b08617",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "อนุมัติ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ffef5ca9-98fc-48a6-b123-48e3ee9e28e4",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "ไม่อนุมัติ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "81472471-28dc-4bab-a291-1804abb1afaa",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "แก้ไขการจอง",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5c3e53cf-9c97-4b45-9db1-37b896a17ba2",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "รออนุมัติ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "acdc8c0b-b2ec-459c-8898-691941d1697d",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "อัปเดต",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        -544
+      ],
+      "id": "47074de0-e806-4f99-a195-5ee837b4c9fe",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'จองห้องประชุม'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1584,
+        -992
+      ],
+      "id": "63ff4a5f-c930-4f2c-85ef-41111e54bb23",
+      "name": "แจ้ง ERROR2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.meeting_no }}",
+            "หัวข้อประชุม": "={{ $json.body.topic }}",
+            "ชื่อ": "={{ $json.body.booker_name }}",
+            "แผนก": "={{ $json.body.department_name }}",
+            "วันที่": "={{ $json.body.meeting_date }}",
+            "ห้องประชุม": "={{ $json.body.room_name }}",
+            "เริ่ม": "={{ $json.body.time_start }}",
+            "เสร็จสิ้น": "={{ $json.body.time_end }}",
+            "จำนวน": "={{ $json.body.attendees }}",
+            "ลิงก์": "={{ $json.body.meeting_link }}",
+            "รายละเอียด": "={{ $json.body.message }}",
+            "สถานะ": "={{ $json.body.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        -1040
+      ],
+      "id": "7e83140a-b25c-4a07-8b02-c832d88b95c9",
+      "name": "จองห้องประชุม",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'อนุมัติ'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1616,
+        -784
+      ],
+      "id": "516bc71b-fc6b-4129-bb38-ca477b4dda69",
+      "name": "แจ้ง ERROR",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'ไม่อนุมัติ'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1632,
+        -576
+      ],
+      "id": "d8c09924-6092-41fc-a9b6-4649b3483ef2",
+      "name": "แจ้ง ERROR1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'แก้ไขการจอง'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1584,
+        -288
+      ],
+      "id": "7f44c42d-9ee8-4bab-968b-0e378d93a5be",
+      "name": "แจ้ง ERROR3",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'รออนุมัติ'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1616,
+        -48
+      ],
+      "id": "71b3f2cf-719b-471b-a1fb-539a9d43f066",
+      "name": "แจ้ง ERROR4",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'คนช่วยงาน'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1632,
+        176
+      ],
+      "id": "23a7c4f2-9b40-47f8-ad54-c3ba19e546fc",
+      "name": "แจ้ง ERROR5",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.meeting_no }}",
+            "หัวข้อประชุม": "={{ $json.body.topic }}",
+            "ชื่อ": "={{ $json.body.booker_name }}",
+            "แผนก": "={{ $json.body.department_name }}",
+            "วันที่": "={{ $json.body.meeting_date }}",
+            "ห้องประชุม": "={{ $json.body.room_name }}",
+            "เริ่ม": "={{ $json.body.time_start }}",
+            "เสร็จสิ้น": "={{ $json.body.time_end }}",
+            "จำนวน": "={{ $json.body.attendees }}",
+            "ลิงก์": "={{ $json.body.link }}",
+            "รายละเอียด": "={{ $json.body.details }}",
+            "สถานะ": "={{ $json.body.meeting_progress }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        160
+      ],
+      "id": "9845146f-d5aa-48dd-9769-505d069caa26",
+      "name": "อัปเดต",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('If').item.json.body.meeting_no }}",
+            "สถานะ": "รออนุมัติ"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        -64
+      ],
+      "id": "87ddb7cb-560e-49c9-adec-641601688a33",
+      "name": "รออนุมัติ",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.body.meeting_no }}",
+            "หัวข้อประชุม": "={{ $json.body.topic }}",
+            "ชื่อ": "={{ $json.body.booker_name }}",
+            "แผนก": "={{ $json.body.department_name }}",
+            "วันที่": "={{ $json.body.meeting_date }}",
+            "ห้องประชุม": "={{ $json.body.room_name }}",
+            "เริ่ม": "={{ $json.body.time_start }}",
+            "เสร็จสิ้น": "={{ $json.body.time_end }}",
+            "จำนวน": "={{ $json.body.attendees }}",
+            "ลิงก์": "={{ $json.body.meeting_link }}",
+            "รายละเอียด": "={{ $json.body.message }}",
+            "สถานะ": "={{ $json.body.status }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        -336
+      ],
+      "id": "111382bf-0b8a-496a-90c5-db82cb6e497e",
+      "name": "แก้ไขการจอง",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        -128
+      ],
+      "id": "f035f5f8-99ed-4dff-9b2f-29031d05dee6",
+      "name": "เช็ครออนุมัติ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        -400
+      ],
+      "id": "7b5f387d-70fa-4f1c-8e00-2881fce424b2",
+      "name": "เช็คแก้ไขการจอง"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('If').item.json.body.meeting_no }}",
+            "สถานะ": "ไม่อนุมัติ"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        -592
+      ],
+      "id": "9748b5e3-6659-49a3-836a-d1db355325b2",
+      "name": "ไม่อนุมัติ",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        -656
+      ],
+      "id": "13075eb9-afdd-4a28-8803-0189e9c0ca95",
+      "name": "เช็คไม่อนุมัติ"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('If').item.json.body.meeting_no }}",
+            "สถานะ": "อนุมัติ"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1168,
+        -800
+      ],
+      "id": "32996dd6-90b0-4caa-809a-e488f3935843",
+      "name": "อนุมัติ",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        -864
+      ],
+      "id": "88619c15-b853-4e20-8906-ecced17c38c9",
+      "name": "เช็คอนุมัติ"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        -1120
+      ],
+      "id": "ea127f0b-d1ab-4f6d-ac87-bc11b651de53",
+      "name": "เช็คจองห้องประชุม"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'กำลังประชุม'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        128
+      ],
+      "id": "9d284c58-eedc-467f-99aa-4fa1edfd3af4",
+      "name": "แจ้ง ERROR6",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"Ue5699a42fe3cf96d4de949c7cfe9ebea\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"⚠️ แจ้งเตือนระบบขัดข้อง!\\nWorkflow จองห้องประชุม\\nพบปัญหาในการอัปเดตข้อมูล\\n'ประชุมเสร็จสิ้น'\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        384
+      ],
+      "id": "1a88cc2a-6e58-4aab-9d1f-3465e7e1a62b",
+      "name": "แจ้ง ERROR7",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "3sauBagPwG2PTLi3",
+          "name": "ERROR"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.meeting_no }}",
+            "สถานะ": "กำลังประชุม"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        144
+      ],
+      "id": "53ce1aa2-468a-49c7-9469-919c414727af",
+      "name": "กำลังประชุม",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -16,
+        48
+      ],
+      "id": "441cd200-fb7a-400d-85d8-81bb0d187b07",
+      "name": "เช็คกำลังประชุม"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1zEg4coASa9_9D2pRPZHwkfpcCSX_DVytcsML4oyn_hA/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=30491714",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.meeting_no }}",
+            "สถานะ": "ประชุมเสร็จสิ้น"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "หัวข้อประชุม",
+              "displayName": "หัวข้อประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ชื่อ",
+              "displayName": "ชื่อ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "แผนก",
+              "displayName": "แผนก",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ห้องประชุม",
+              "displayName": "ห้องประชุม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "วันที่",
+              "displayName": "วันที่",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เริ่ม",
+              "displayName": "เริ่ม",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "เสร็จสิ้น",
+              "displayName": "เสร็จสิ้น",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "จำนวน",
+              "displayName": "จำนวน",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "รายละเอียด",
+              "displayName": "รายละเอียด",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ลิงก์",
+              "displayName": "ลิงก์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "สถานะ",
+              "displayName": "สถานะ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -256,
+        416
+      ],
+      "id": "05dba449-704c-4c13-a8de-0395728e921e",
+      "name": "ประชุมเสร็จสิ้น",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "fJ0mX9k85JzOKgXe",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        304
+      ],
+      "id": "3cc80693-72ed-4351-95a2-0b6d7a61fafc",
+      "name": "เช็คประชุมเสร็จสิ้น"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "82b3b6d9-2b71-4105-b899-78c8bf2e67fb",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1408,
+        96
+      ],
+      "id": "ff2395c9-ef9c-45d1-9449-bc7a91f0d7e9",
+      "name": "เช็คอัปเดต"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "กำลังประชุม",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "ประชุมเสร็จสิ้น",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "จองห้องประชุม",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "อนุมัติ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ไม่อนุมัติ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แก้ไขการจอง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "รออนุมัติ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "อัปเดต",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "จองห้องประชุม": {
+      "main": [
+        [
+          {
+            "node": "เช็คจองห้องประชุม",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request9": {
+      "main": [
+        []
+      ]
+    },
+    "แจ้ง ERROR3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "อัปเดต": {
+      "main": [
+        [
+          {
+            "node": "เช็คอัปเดต",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "รออนุมัติ": {
+      "main": [
+        [
+          {
+            "node": "เช็ครออนุมัติ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แก้ไขการจอง": {
+      "main": [
+        [
+          {
+            "node": "เช็คแก้ไขการจอง",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็ครออนุมัติ": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คแก้ไขการจอง": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ไม่อนุมัติ": {
+      "main": [
+        [
+          {
+            "node": "เช็คไม่อนุมัติ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คไม่อนุมัติ": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "อนุมัติ": {
+      "main": [
+        [
+          {
+            "node": "เช็คอนุมัติ",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอนุมัติ": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คจองห้องประชุม": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "แจ้ง ERROR7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "กำลังประชุม": {
+      "main": [
+        [
+          {
+            "node": "เช็คกำลังประชุม",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คกำลังประชุม": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ประชุมเสร็จสิ้น": {
+      "main": [
+        [
+          {
+            "node": "เช็คประชุมเสร็จสิ้น",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "แจ้ง ERROR7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คประชุมเสร็จสิ้น": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "เช็คอัปเดต": {
+      "main": [
+        [
+          {
+            "node": "แจ้ง ERROR5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c3c31c35-d8b6-4043-bc1e-1c5bfc941b27",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "505cdfd3c0d036c93bed760e5ab95ae33dbab87608194be34600985d0597b8d4"
+  },
+  "id": "s1yplZLY4MlkegMaekGr4",
+  "tags": []
+}
